@@ -1,0 +1,16 @@
+Image: I_0.jpg
+Weeds: True
+BBox: [424, 95, 482, 116]
+_____
+Image: I_1.jpg
+Weeds: False
+BBox: []
+_____
+Image: I_2.jpg
+Weeds: True
+BBox: [359, 69, 572, 149]
+_____
+Image: I_3.jpg
+Weeds: False
+BBox: []
+_____

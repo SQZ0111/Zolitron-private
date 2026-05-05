@@ -1,0 +1,43 @@
+ {"bbox_2d": [800, 574, 1486, 819], "label": "overgrown wild greenery and weeds"}
+Locate overgrown wild greenery and weeds in this image located directly next to the road surface. and give me coordinates [ymin, xmin, ymax, xmax].
+
+didn't work box in middle of street.
+_________________
+
+return size of image 
+doesn't work
+
+_________________
+Given image is {640,480} pixels, nalyze the road edge and pavement for overgrown weeds. Only identify greenery that is cracking the asphalt, covering the curb, or spilling onto the walking path. Ignore manicured lawns or trees behind fences. If the road edge is clear, you must return [0,0,0,0]. Provide coordinates: [ymin, xmin, ymax, xmax].
+
+nope
+
+______________
+Given image is {640,480} pixels, locate overgrown wild greenery and weeds in the image and give me their coordinates [ymin, xmin, ymax, xmax], give [0,0,0,0] if there are none.
+
+works but cant distinguish wild and non wild
+____________
+Given image is {640,320} pixels, Scan the image carefully for any wild greenery, If you see NO wild greenery, you MUST return exactly [0,0,0,0]. If wild greenery is found provide coordinates: [ymin, xmin, ymax, xmax].
+
+cant distinguish
+____________
+
+Given image is {640,320} pixels, given is a street image, is there any overgrown vegetation? 
+ works not bad
+
+____________
+
+Analyze this image for overgrown vegetation. Return a JSON with "weeds_found" (boolean) and "bbox" [ymin, xmin, ymax, xmax]. Use [0,0,0,0] if none.
+
+_____
+
+Given image is {640,320} pixels, given is a street image, is there any overgrown vegetation? if yes only provide coordinates: [ymin, xmin, ymax, xmax] and label it , if no provide the coordinates: [-1,-1,-1,-1] and label it "clear"', semi works
+
+______
+
+Given image is {640,320} pixels, given is a street image, is there any overgrown vegetation? Return a JSON with "weeds_found" (boolean) and "bbox" [ymin, xmin, ymax, xmax]. Use [0,0,0,0] if weeds_found is false.
+works
+
+_________
+Given image is {640,320} pixels, given is a street image, is there any overgrown vegetation? Return a JSON with "weeds_found" (boolean) and "bbox" [ymin, xmin, ymax, xmax].
+works nicely
