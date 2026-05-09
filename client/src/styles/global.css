@@ -1,0 +1,70 @@
+/* native css or mix? */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.v-application {
+  font-family: 'Roboto', sans-serif;
+  background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+}
+
+.v-main {
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 64px);
+}
+
+.v-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.v-container > .v-row {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.v-card {
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(33, 150, 243, 0.15);
+  background: linear-gradient(135deg, #FFFFFF 0%, #F5F9FF 100%);
+}
+
+.v-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 20px rgba(13, 71, 161, 0.12);
+}
+
+.v-app-bar {
+  background: linear-gradient(90deg, #0D47A1 0%, #1565C0 30%, #1976D2 70%, #1E88E5 100%) !important;
+}
+
+.v-tab {
+  text-transform: none;
+  letter-spacing: 0.5px;
+  color: #E3F2FD !important;
+  transition: all 0.3s ease;
+}
+
+.v-tab:hover {
+  color: #FFA726 !important;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.v-tab--active {
+  color: #FFFFFF !important;
+  border-bottom: 2px solid #FFA726 !important;
+}
+
+.v-btn--primary {
+  background: linear-gradient(90deg, #1976D2, #42A5F5);
+  border: none;
+}
