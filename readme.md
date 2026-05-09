@@ -58,9 +58,6 @@ npm run dev
 
 <hr>
 
-![flowchart-data](./doc-imgs/flowchart-data-images-1.png)
-*How the labeled data could be processed and flows through the backend.*
-<hr>
 
 
 ## Backend (Monolith)
