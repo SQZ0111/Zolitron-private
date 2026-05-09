@@ -1,0 +1,19 @@
+{
+  "name": "zolitron",
+  "version": "1.0.0",
+  "description": "This is the project of group zolitron-2",
+  "license": "ISC",
+  "author": "",
+  "scripts": {
+
+    "install:all": "concurrently \"cd client && npm i\" \"cd backend && pip install -r requirements.txt\"",
+    "setup:mac": "python3 -m venv backend/venv && source backend/venv/bin/activate && npm run install:all",
+    "setup:win": "python3 -m venv backend/venv && backend\\venv\\Scripts\\activate && npm run install:all",
+    "dev": "concurrently \"cd client && npm run dev\" \"cd backend && fastapi dev\" --kill-others --raw",
+    "client": "cd client && npm run dev",
+    "backend": "cd backend && fastapi dev"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
