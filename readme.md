@@ -10,7 +10,7 @@ Prerequisites: Python and node installed in maschine
 
 - [**Python**](https://www.python.org/downloads/)
 
-Verify than in a terminal with:
+Verify then in a terminal with:
 
 ```bash
 node --version
