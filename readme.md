@@ -21,9 +21,15 @@ python --version
 1. `git clone <url>`
 2. On your local maschine open the project with your editor of choice.
 3. Recommended: Open at least  three shells from your terminal. One for running the front- & backend, one for workings on client and one for backend workings (installations).
+
+
+
+
 ### Windows
 
 ```bash
+Run `npm i` in the root directory first.
+
 # Create virtual environment and install all dependencies
 npm run setup:win
 
@@ -34,6 +40,7 @@ npm run dev
 ```
 
 ### Mac
+Run `npm i` in the root directory first.
 
 ```bash
 # Create virtual environment and install all dependencies
