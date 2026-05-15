@@ -31,11 +31,13 @@ python --version
 Run `npm i` in the root directory first.
 
 # Create virtual environment 
-npm run setup:win
+npm run create:venv:win
 
 #Activate virtual environment (within cmd type that)
 backend/venv/Scripts/activate
 
+#Install backend and client packages
+npm run dev install:all:win
 
 # Start both client and server
 # Run `npm run dev` to run the app. The client is on `http://localhost:5173/` the backend on `http://127.0.0.1:8000`
@@ -44,24 +46,28 @@ npm run dev
 ```
 
 ### Mac
-
+Tensorflow needs a down-grade on python. Installing and  using Version **3.9** should work. 
 
 ```bash
+#Install Python Version 3.9
+brew install python@3.9
+
+# Should be linked, though test it once
+brew link python@3.9
+
 
 #Run `npm i` in the root directory first.
 npm i
 
 #Install venv 
-npm run venv:install:mac
+npm run create:venv:mac
 
 #Activate venv
-npm venv:activate:mac
+source backend/venv/bin/activate
 
-#create virtualenv and activate virtualenv in backend
-npm run venv:activate:mac
+#Install backend and client packages
+npm run install:all:mac
 
-# Create virtual environment and install all dependencies
-npm run setup:mac
 
 # Start both client and server
 # Run `npm run dev` to run the app. The client is on `http://localhost:5173/` the backend on `http://127.0.0.1:8000`
