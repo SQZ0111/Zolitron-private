@@ -7,7 +7,8 @@
   "scripts": {
     "install:all": "concurrently \"cd client && npm i\" \"cd backend && pip install -r requirements.txt\"",
     "setup:win": "python -m venv backend/app/venv && cmd /c \"backend\\app\\venv\\Scripts\\activate && pip install -r backend/requirements.txt && cd client && npm i\"",
-    "setup:mac": "python3 -m venv backend/app/venv && bash -c \"source backend/app/venv/bin/activate && pip install -r backend/requirements.txt && cd client && npm i\"",
+    "venv:activate:mac": "python3 -m venv backend/app/venv && bash -c \"source backend/app/venv/bin/activate",
+    "setup:mac": "pip install -r backend/requirements.txt && cd client && npm i\"",
     "dev": "concurrently \"cd client && npm run dev\" \"cd backend && backend\\venv\\Scripts\\python -m fastapi dev\" --kill-others --raw",
     "client": "cd client && npm run dev",
     "backend": "cd backend && backend\\venv\\Scripts\\python -m fastapi dev"

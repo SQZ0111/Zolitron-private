@@ -40,9 +40,16 @@ npm run dev
 ```
 
 ### Mac
-Run `npm i` in the root directory first.
+
 
 ```bash
+
+#Run `npm i` in the root directory first.
+npm i
+
+#create virtualenv and activate virtualenv in backend
+npm run venv:activate:mac
+
 # Create virtual environment and install all dependencies
 npm run setup:mac
 
