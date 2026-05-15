@@ -47,6 +47,12 @@ npm run dev
 #Run `npm i` in the root directory first.
 npm i
 
+#Install venv 
+npm run venv:install:mac
+
+#Activate venv
+npm venv:activate:mac
+
 #create virtualenv and activate virtualenv in backend
 npm run venv:activate:mac
 
