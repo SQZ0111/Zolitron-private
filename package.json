@@ -6,13 +6,11 @@
   "author": "",
   "scripts": {
     "install:all": "concurrently \"cd client && npm i\" \"cd backend && pip install -r requirements.txt\"",
-    "setup:win": "python -m venv backend/app/venv && cmd /c \"backend\\app\\venv\\Scripts\\activate && pip install -r backend/requirements.txt && cd client && npm i\"",
-    "venv:install:mac": "python3 -m venv backend/app/venv",
-    "venv:activate:mac": "source backend/app/venv/bin/activate",
-    "setup:mac": "pip install -r backend/requirements.txt && cd client && npm i",
-    "dev": "concurrently \"cd client && npm run dev\" \"cd backend && backend\\venv\\Scripts\\python -m fastapi dev\" --kill-others --raw",
+    "setup:mac": "python3 -m venv backend/venv && source backend/venv/bin/activate && npm run install:all",
+    "setup:win": "python3 -m venv backend/app/venv &&backend\\app\\venv\\Scripts\\activate && npm run install:all",
+    "dev": "concurrently \"cd client && npm run dev\" \"cd backend && fastapi dev\" --kill-others --raw",
     "client": "cd client && npm run dev",
-    "backend": "cd backend && backend\\venv\\Scripts\\python -m fastapi dev"
+    "backend": "cd backend && fastapi dev"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

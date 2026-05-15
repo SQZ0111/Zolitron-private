@@ -30,8 +30,12 @@ python --version
 ```bash
 Run `npm i` in the root directory first.
 
-# Create virtual environment and install all dependencies
+# Create virtual environment 
 npm run setup:win
+
+#Activate virtual environment (within cmd type that)
+backend/venv/Scripts/activate
+
 
 # Start both client and server
 # Run `npm run dev` to run the app. The client is on `http://localhost:5173/` the backend on `http://127.0.0.1:8000`
