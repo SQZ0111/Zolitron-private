@@ -33,10 +33,8 @@ Run `npm i` in the root directory first.
 # Create virtual environment 
 npm run create:venv:win
 
-#Activate virtual environment (within cmd type that)
-backend\app\venv\Scripts\activate
 
-#Install backend and client packages
+#Activate virtual env. Install backend and client packages
 npm run dev install:all:win
 
 # Start both client and server
