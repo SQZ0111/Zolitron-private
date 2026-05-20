@@ -24,6 +24,7 @@ python --version
 
 
 **Important**: If you are setting up the project, do it firstly with SQZ0111 if possible.
+Make sure that *Python 3.13.13* is used.
 
 ### Windows
 
