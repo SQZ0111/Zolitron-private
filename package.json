@@ -14,10 +14,10 @@
     "install:backend": "cd backend && .\\app\\venv\\Scripts\\python -m pip install -r requirements.txt",
     "install:backend:linux": "cd backend && ./venv/bin/python -m pip install -r requirements.txt",
     "install:client": "cd client && npm i",
-    "dev": "concurrently \"cd client && npm run dev\" \"cd backend && .\\app\\venv\\Scripts\\python -m fastapi dev\" --kill-others --raw",
-    "dev:linux": "concurrently \"cd client && npm run dev\" \"cd backend && ./venv/bin/python -m fastapi dev\" --kill-others --raw",
+
+    "dev": "concurrently \"cd client && npm run dev\" \"npm run backend\" --kill-others --raw",
     "client": "cd client && npm run dev",
-    "backend": "cd backend && fastapi dev"
+    "backend":" cd backend\\app && fastapi dev"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

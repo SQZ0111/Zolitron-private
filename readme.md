@@ -23,19 +23,32 @@ python --version
 3. Recommended: Open at least  three shells from your terminal. One for running the front- & backend, one for workings on client and one for backend workings (installations).
 
 
-
+**Important**: If you are setting up the project, do it firstly with SQZ0111 if possible.
+Make sure that *Python 3.13.13* is used.
 
 ### Windows
 
 ```bash
 Run `npm i` in the root directory first.
 
-# Create virtual environment 
-npm run create:venv:win
+# Create virtual environment ´
+#1. Choose backend as workspace
+#2. Open the command palette with strg+shift+p or under the tab view
+#3. type create environment, choose the requirements.txt
+#4. after creating and installing, try the following
+cd backend\app && fastapi dev
+#This should start the backend server. Now you are ready to set back the root as workspace directory
+
+#install client packages
+npm run install:client
 
 
-#Activate virtual env. Install backend and client packages
-npm run dev install:all:win
+#You won´t need this anymore if you followed the steps above, this is just here for later creating a docker image
+#npm run create:venv:win
+##Activate virtual env. Install backend and client packages
+#npm run dev install:all:win
+
+
 
 # Start both client and server
 # Run `npm run dev` to run the app. The client is on `http://localhost:5173/` the backend on `http://127.0.0.1:8000`
