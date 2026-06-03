@@ -2,7 +2,9 @@
 
 The project is about ...
 
-
+## Notice
+To use the map, you need to get your own Maptiler API key from here: https://cloud.maptiler.com/account/keys
+Then you need to create your own .env file in ../client and copy/save your key as follows: VITE_MAPTILER_KEY = 'YOUR_KEY'. (Currently only on Ticket-#7-Map-Branch needed)
 
 ## Setup
 Prerequisites: Python and node installed in maschine
