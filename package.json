@@ -16,8 +16,10 @@
     "install:client": "cd client && npm i",
 
     "dev": "concurrently \"cd client && npm run dev\" \"npm run backend\" --kill-others --raw",
+    "dev:linux": "concurrently \"cd client && npm run dev\" \"npm run backend:linux\" --kill-others --raw",
     "client": "cd client && npm run dev",
-    "backend":" cd backend\\app && fastapi dev"
+    "backend":" cd backend\\app && fastapi dev",
+    "backend:linux": "cd backend && ./venv/bin/python -m fastapi dev app/main.py"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
