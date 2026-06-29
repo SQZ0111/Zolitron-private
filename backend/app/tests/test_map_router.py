@@ -1,4 +1,4 @@
-from fastapi.testclient import TestClient
+﻿from fastapi.testclient import TestClient
 from app.main import app
 
 client = TestClient(app)
@@ -25,5 +25,7 @@ def test_get_dump_data_returns_successful_response():
     assert first_item["country"] == "Germany"
     assert "latitude" in first_item
     assert "longitude" in first_item
-    assert "type" in first_item
+    assert "label" in first_item
+    assert "category" in first_item
     assert "confidence" in first_item
+    assert "imgUrl" in first_item
