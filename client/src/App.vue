@@ -1,5 +1,6 @@
 <script setup>
 import Navbar from './components/Navigation/Navbar.vue';
+//import UserMap from './components/Navigation/UserMap.vue';
 </script>
 
 <template>
