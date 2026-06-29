@@ -1,7 +1,2 @@
-from sqlalchemy import Column,Integer,String,ForeignKey, Float, DateTime
-from datetime import datetime
-from sqlalchemy.orm import relationship
+"""Deprecated placeholder kept so older imports do not break during MVP work."""
 
-
-class flyDump(Base):
-    pass

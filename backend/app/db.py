@@ -1,29 +1,26 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
-from models import city,image
+from sqlalchemy.orm import declarative_base, sessionmaker
 
-# sqlite://<nohostname>/<path>
-# where <path> is relative:
-# data stored in local directory 
-engine = create_engine("sqlite:///zolitron.db")
+DATABASE_URL = "sqlite:///./zolitron.db"
 
+engine = create_engine(
+    DATABASE_URL,
+    connect_args={"check_same_thread": False},
+)
+
+SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 Base = declarative_base()
 
-#create tables 
-Base.metadata.create_all(engine)
 
+def init_db():
+    from app.models import analysis_run, category, classification, image, label  # noqa: F401
 
-#session init
-Session = sessionmaker(bind=engine,autoflush=False)
-session = Session()
+    Base.metadata.create_all(bind=engine)
 
 
 def get_db():
-    ##init db
-    db = Session()
-    try:    
-    #do stuff (queries)
+    db = SessionLocal()
+    try:
         yield db
     finally:
         db.close()
