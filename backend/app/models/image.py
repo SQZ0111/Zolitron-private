@@ -1,21 +1,23 @@
-from sqlalchemy import Column,Integer,String,ForeignKey, Float, DateTime
-from datetime import datetime
+from datetime import datetime, timezone
+
+from sqlalchemy import Column, DateTime, Float, Integer, String
 from sqlalchemy.orm import relationship
-from pydantic import BaseModel, PositiveInt,PositiveFloat,ValidationError
-from ..db import Base
 
-class Image(Base,BaseModel):
-    __tablename__ = "Images"
-    id: PositiveInt = Column(Integer, primary_key=True,index=True)
-    #every image belongs to one city
-    city_id: PositiveInt = Column(Integer, ForeignKey("cities.id"), nullable=False)
-    source: str = Column(String(50),default="upload")
-    file_path: str = Column(String(500), nullable=False)
-    latitude: PositiveFloat = Column(Float,nullable=True)
-    longitude: PositiveFloat = Column(Float,nullable=True)
-    processed_state: str = Column(String(20), default="processed")
-    timestamp: datetime = Column(DateTime, default=datetime.now(datetime.timezone.utc))
+from app.db import Base
 
-    city = relationship("City", back_populates="image")
-    sites = relationship("Flydump", back_populates="images")
 
+class Image(Base):
+    __tablename__ = "images"
+
+    id = Column(Integer, primary_key=True, index=True)
+    source = Column(String(50), nullable=False, default="dummy")
+    img_url = Column(String(500), nullable=False)
+    storage_path = Column(String(500), nullable=True)
+    city = Column(String(120), nullable=False)
+    country = Column(String(120), nullable=False, default="Germany")
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
+    status = Column(String(30), nullable=False, default="classified")
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+
+    classifications = relationship("Classification", back_populates="image")
