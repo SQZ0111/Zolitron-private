@@ -100,18 +100,67 @@ Run backend only on Linux/macOS:
 npm run backend:linux
 ```
 
-Run tests:
+## Testing
+
+Run tests from the repository root after completing the setup for your OS.
+
+### Frontend Tests
 
 ```bash
 npm run test:client
+```
+
+This runs the Vitest suite in `client/src/tests`.
+
+### Backend Tests
+
+Windows:
+
+```bash
 npm run test:backend
 ```
 
-On Linux/macOS, use:
+Linux/macOS:
 
 ```bash
 npm run test:backend:linux
 ```
+
+The backend test scripts use the project virtual environment at `backend/venv`. If the backend venv or dependencies are missing, run the setup command first:
+
+```bash
+npm run install:all:win
+```
+
+or on Linux/macOS:
+
+```bash
+npm run install:all:linux
+```
+
+You can also run pytest directly from the backend directory.
+
+Windows:
+
+```bash
+cd backend
+.\venv\Scripts\python -m pytest app/tests
+```
+
+Linux/macOS:
+
+```bash
+cd backend
+./venv/bin/python -m pytest app/tests
+```
+
+Expected backend result for the current suite:
+
+```text
+8 passed
+```
+
+The backend tests may create a local `backend/zolitron.db` SQLite file. This file is ignored by Git and should not be committed.
 
 ## Application Flow
 
@@ -254,3 +303,4 @@ or:
 ```bash
 npm run install:all:linux
 ```
+
