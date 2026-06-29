@@ -5,21 +5,23 @@
   "license": "ISC",
   "author": "",
   "scripts": {
-    "create:venv:win": "python3 -m venv backend/app/venv",
-    "create:venv:mac": "python3.9 -m venv backend/venv",
+    "create:venv:win": "py -3 -m venv backend/venv",
+    "create:venv:mac": "python3 -m venv backend/venv",
     "create:venv:linux": "python3 -m venv backend/venv",
-    "install:all:win": "concurrently \"npm run install:client\" \"npm run install:backend\"",
-    "install:all:mac": "concurrently \"cd client && npm i\" \"cd backend && pip install -r requirementsMac.txt\"",
-    "install:all:linux": "concurrently \"cd client && npm i\" \"npm run install:backend:linux\"",
-    "install:backend": "cd backend && .\\app\\venv\\Scripts\\python -m pip install -r requirements.txt",
+    "install:all:win": "npm run install:client && npm run create:venv:win && npm run install:backend",
+    "install:all:mac": "npm run install:client && npm run create:venv:mac && npm run install:backend:linux",
+    "install:all:linux": "npm run install:client && npm run create:venv:linux && npm run install:backend:linux",
+    "install:backend": "cd backend && .\\venv\\Scripts\\python -m pip install -r requirements.txt",
     "install:backend:linux": "cd backend && ./venv/bin/python -m pip install -r requirements.txt",
-    "install:client": "cd client && npm i",
-
-    "dev": "concurrently \"cd client && npm run dev\" \"npm run backend\" --kill-others --raw",
-    "dev:linux": "concurrently \"cd client && npm run dev\" \"npm run backend:linux\" --kill-others --raw",
-    "client": "cd client && npm run dev",
-    "backend":" cd backend\\app && fastapi dev",
-    "backend:linux": "cd backend && ./venv/bin/python -m fastapi dev app/main.py"
+    "install:client": "npm --prefix client install",
+    "dev": "concurrently --kill-others-on-fail --names client,backend --prefix-colors cyan,magenta \"npm run client\" \"npm run backend\"",
+    "dev:linux": "concurrently --kill-others-on-fail --names client,backend --prefix-colors cyan,magenta \"npm run client\" \"npm run backend:linux\"",
+    "client": "npm --prefix client run dev",
+    "backend": "cd backend && .\\venv\\Scripts\\python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000",
+    "backend:linux": "cd backend && ./venv/bin/python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000",
+    "test:client": "npm --prefix client run test",
+    "test:backend": "cd backend && .\\venv\\Scripts\\python -m pytest app/tests",
+    "test:backend:linux": "cd backend && ./venv/bin/python -m pytest app/tests"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

@@ -1,18 +1,24 @@
 # Zolitron
 
-The project is about ...
+Zolitron is an MVP web application for detecting and reviewing illegal garbage sites and vegetation/weeds from image data.
 
-## Notice
-To use the map, you need to get your own Maptiler API key from here: https://cloud.maptiler.com/account/keys
-Then you need to create your own .env file in ../client and copy/save your key as follows: VITE_MAPTILER_KEY = 'YOUR_KEY'. (Currently only on Ticket-#7-Map-Branch needed)
+Users select a German city or area, the system retrieves or imports image data, classifies images, and visualizes detections on a map for review.
 
-## Setup
-Prerequisites: Python and node installed in maschine
-- [**Node.js**](https://nodejs.org/)
+## Tech Stack
 
-- [**Python**](https://www.python.org/downloads/)
+- Frontend: Vue 3, Vite, Vuetify, Vue Router, MapLibre GL
+- Backend: Python, FastAPI, SQLAlchemy, Pydantic
+- Storage: SQLite for metadata and local disk for image files
+- AI/ML: TensorFlow and Pillow for image classification work
 
-Verify then in a terminal with:
+## Prerequisites
+
+Install these before cloning/running the project:
+
+- [Node.js](https://nodejs.org/)
+- [Python](https://www.python.org/downloads/)
+
+Verify them from a terminal:
 
 ```bash
 node --version
@@ -20,134 +26,231 @@ npm --version
 python --version
 ```
 
-1. `git clone <url>`
-2. On your local maschine open the project with your editor of choice.
-3. Recommended: Open at least  three shells from your terminal. One for running the front- & backend, one for workings on client and one for backend workings (installations).
+On Windows, the scripts use the Python launcher:
 
+```bash
+py -3 --version
+```
 
-**Important**: If you are setting up the project, do it firstly with SQZ0111 if possible.
-Make sure that *Python 3.13.13* is used.
+## Environment Variables
+
+To use the map, create a `.env` file in the `client` directory:
+
+```bash
+client/.env
+```
+
+Add your MapTiler key:
+
+```env
+VITE_MAPTILER_KEY=YOUR_KEY
+```
+
+You can get a key from the MapTiler account page: https://cloud.maptiler.com/account/keys
+
+## Setup From A Fresh Clone
+
+Run commands from the repository root.
 
 ### Windows
 
 ```bash
-Run `npm i` in the root directory first.
-
-# Create virtual environment ´
-#1. Choose backend as workspace
-#2. Open the command palette with strg+shift+p or under the tab view
-#3. type create environment, choose the requirements.txt
-#4. after creating and installing, try the following
-cd backend\app && fastapi dev
-#This should start the backend server. Now you are ready to set back the root as workspace directory
-
-#install client packages
-npm run install:client
-
-
-#You won´t need this anymore if you followed the steps above, this is just here for later creating a docker image
-#npm run create:venv:win
-##Activate virtual env. Install backend and client packages
-#npm run dev install:all:win
-
-
-
-# Start both client and server
-# Run `npm run dev` to run the app. The client is on `http://localhost:5173/` the backend on `http://127.0.0.1:8000`
+npm install
+npm run install:all:win
 npm run dev
-
 ```
 
-### Mac
-Tensorflow needs a down-grade on python. Installing and  using Version **3.9** should work. 
+### Linux / macOS
 
 ```bash
-#Install Python Version 3.9
-brew install python@3.9
+npm install
+npm run install:all:linux
+npm run dev:linux
+```
 
-# Should be linked, though test it once
-brew link python@3.9
+The local URLs are:
 
+- Client: http://localhost:5173/
+- Backend: http://127.0.0.1:8000
+- FastAPI docs: http://127.0.0.1:8000/docs
 
-#Run `npm i` in the root directory first.
-npm i
+## Useful Commands
 
-#Install venv 
-npm run create:venv:mac
+Run both frontend and backend:
 
-#Activate venv
-source backend/venv/bin/activate
-
-#Install backend and client packages
-npm run install:all:mac
-
-
-# Start both client and server
-# Run `npm run dev` to run the app. The client is on `http://localhost:5173/` the backend on `http://127.0.0.1:8000`
-
+```bash
 npm run dev
-
 ```
 
+Run frontend only:
 
-## Explaination App
-
-### Overview
-*Note that the backend is now updated to FastApi. Though the general flow still applies.*
-
-
-![flowchart](./doc-imgs/flowchart.png)
-*!TODO BE UPDATE! A perspective on the app from client request over the backend and database.*
-
-<hr>
-
-
-
-## Backend (Monolith)
-Why repository pattern:
-- abstract the data layer from the processing layer
-- data sources can vary in future 
-- diffrent queries from client to search (e.g city, postal code...)
-
-An Example:
-```python
-class CityRepository:
-    #initialise db session 
-    def __init__(self, db: Session):
-        self.db = db
-    
-    # Method that returns City by postal code (city will have foreign key to get corresponding images)
-    def get_by_postal(self, code: int) -> City:
-        return self.db.query(City).filter(City.postal == postal)
-
-    #more query methods
+```bash
+npm run client
 ```
-A alternative consideration was to just use QueryBuilder and a DataRetriever singletons but that would result in violating open-closed.  
 
-Everything regarding the actual business logic (ML-Model and actual processing) is similiar as [service layers](https://martinfowler.com/eaaCatalog/serviceLayer.html)
+Run backend only on Windows:
 
-Technologies used:
+```bash
+npm run backend
+```
 
-- Python + FastAPI – web framework (request/response handling)
+Run backend only on Linux/macOS:
 
-- SQLAlchemy – ORM and query builder 
+```bash
+npm run backend:linux
+```
 
-- SQLite – database
+Run tests:
 
-- Pydantic – request/response validation
+```bash
+npm run test:client
+npm run test:backend
+```
 
-- TensorFlow – pre‑trained ML model for waste classification
+On Linux/macOS, use:
 
-- Pillow - Image loading
+```bash
+npm run test:backend:linux
+```
 
+## Application Flow
 
-## Common problems
+The current MVP is split into three layers: client, backend, and storage. The flowchart below shows the intended request path from the Vue client through the FastAPI backend and into the data/storage layer.
 
-##### Installed modules can not be recognized in python code:
-If you have problems regarding the import of the modules (does not recognize the module although you installed it prior with virtualenv activated) this will probably help you:
-1. Check if you installed the package with `pip list`
-2. Check which *python.exe* is used with `where python` (Windows) or `which python` (Linux/Mac). If you get multiple outputs than step 3 is necessary. 
-3. Select the correct interpreter in IDE. 
-    - Open the Command Palette (Ctrl+Shift+P / Cmd+Shift+P)
-    - Type Python: Select Interpreter
-    - Type in the path from the output of step 2. Should be something like this `<other-paths>\Zolitron\backend\venv\Scripts\python.exe` 
+![Zolitron application flowchart](./doc-imgs/flowchart.png)
+
+The flow is:
+
+1. A user opens the Vue client and enters a German city or area on the map page.
+2. The map view delegates API communication to the frontend service layer.
+3. The FastAPI router receives the request and keeps endpoint logic thin.
+4. Backend services handle business rules such as validation, import, deduplication, classification, and review state changes.
+5. Repositories isolate SQLite access.
+6. Storage utilities handle image files on disk so routers do not access file storage directly.
+7. The backend returns detection data to the client.
+8. The client renders an empty map after valid location input and later displays classified markers when backend detection data is available.
+
+## Architecture Notes
+
+### Client
+
+The client follows a Vue/Vite structure:
+
+```text
+client/src/
+  views/
+  components/
+  services/
+  router/
+  tests/
+```
+
+Keep page-level presentation in `views`, reusable UI in `components`, and backend calls in `services`. The map page should orchestrate the experience, while form and marker logic should live in smaller components/services where practical.
+
+### Backend
+
+The backend is a modular FastAPI monolith:
+
+```text
+backend/app/
+  main.py
+  router/
+  schemas/
+  repositories/
+  services/
+  models/
+  tests/
+```
+
+Routers should validate input, call service/repository code, and return response schemas. Business logic such as classification, import, deduplication, and review handling belongs in services, not route handlers.
+
+### Storage
+
+For the MVP, image files are stored on disk and only paths/metadata are stored in SQLite. Do not store raw image blobs in the database.
+
+## Current MVP Direction
+
+The map feature should support:
+
+- Entering a city for map initialization
+- Optional street address input for more precise centering
+- Restricting searches to Germany
+- Explicit validation errors for empty or invalid input
+- Rendering an empty map after a valid location submission
+- Rendering classified markers from backend results later
+
+Image processing should support:
+
+- Importing images from a source or local folder
+- Storing image files on disk
+- Storing metadata in SQLite
+- Avoiding duplicates
+- Tracking processing status
+
+Recommended image statuses:
+
+```text
+imported -> pending -> classified -> low-confidence -> reviewed
+```
+
+Classification should produce:
+
+- Predicted label
+- Confidence score
+- Processing status
+
+Initial labels:
+
+- Illegal garbage site
+- Vegetation/weeds
+- Clean street/no relevant finding
+
+## Common Problems
+
+### Backend modules are not recognized
+
+Check that dependencies are installed into the project virtual environment:
+
+```bash
+backend\venv\Scripts\python -m pip list
+```
+
+On Linux/macOS:
+
+```bash
+./backend/venv/bin/python -m pip list
+```
+
+Then select the matching interpreter in your IDE:
+
+```text
+backend/venv/Scripts/python.exe
+```
+
+On Linux/macOS:
+
+```text
+backend/venv/bin/python
+```
+
+### `concurrently` is not found
+
+Run this once from the repository root:
+
+```bash
+npm install
+```
+
+### Backend venv is missing
+
+Run the install command for your OS:
+
+```bash
+npm run install:all:win
+```
+
+or:
+
+```bash
+npm run install:all:linux
+```
