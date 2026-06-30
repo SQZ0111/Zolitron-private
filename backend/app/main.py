@@ -1,4 +1,5 @@
-﻿import logging
+import logging
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
@@ -12,7 +13,21 @@ from app.services.catalog import CatalogService
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI()
+#use lifespan manager for init - https://fastapi.tiangolo.com/advanced/events/
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    db = SessionLocal()
+    try:
+        CatalogService(db).seed_dummy_data()
+    finally:
+        db.close()
+
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 app.add_middleware(
@@ -25,16 +40,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.on_event("startup")
-def on_startup():
-    init_db()
-    db = SessionLocal()
-    try:
-        CatalogService(db).seed_dummy_data()
-    finally:
-        db.close()
 
 
 @app.exception_handler(HTTPException)
@@ -74,5 +79,69 @@ app.include_router(stats.router)
 
 @app.get("/")
 def read_root():
-    return {"message": "Zolitron backend is running"}
-
+    return {
+        "name": "Zolitron Backend API",
+        "status": "running",
+        "description": "REST API for Zolitron MVP image metadata and serving as api gateway to client and data services.",
+        "docs": {
+            "swagger": "/docs",
+            "openapi": "/openapi.json",
+        },
+        "endpoints": [
+            {
+                "method": "GET",
+                "path": "/api/images",
+                "description": "List image metadata records, including imgUrl values for marker popups.",
+            },
+            {
+                "method": "GET",
+                "path": "/api/images/{image_id}",
+                "description": "Get one image metadata record by ID.",
+                "example": "/api/images/1",
+            },
+            {
+                "method": "GET",
+                "path": "/api/classifications",
+                "description": "List marker-ready classification objects with label, category, confidence, coordinates, city, country, and imgUrl.",
+                "query_parameters": ["city", "label"],
+                "examples": [
+                    "/api/classifications?city=Bochum",
+                    "/api/classifications?label=garbage",
+                    "/api/classifications?city=Bochum&label=garbage",
+                ],
+            },
+            {
+                "method": "GET",
+                "path": "/api/labels",
+                "description": "List available labels and their categories.",
+            },
+            {
+                "method": "GET",
+                "path": "/api/labels/categories",
+                "description": "List available label categories.",
+            },
+            {
+                "method": "GET",
+                "path": "/api/stats",
+                "description": "Return image, classification, label, category, and analysis run counts.",
+            },
+            {
+                "method": "GET",
+                "path": "/api/stats/analysis-runs",
+                "description": "List analysis run metadata.",
+            },
+            {
+                "method": "POST",
+                "path": "/api/map/dump-data",
+                "description": "Legacy map endpoint returning city-filtered marker-ready classifications.",
+                "body_example": {"city": "Bochum", "country": "Germany"},
+            },
+            {
+                "method": "GET",
+                "path": "/static/dummy-images/{filename}",
+                "description": "Serve dummy marker popup images referenced by imgUrl.",
+                "example": "/static/dummy-images/overgrown-1.jpg",
+            },
+        ],
+        "error_schema": {"detail": "string", "code": "string"},
+    }
