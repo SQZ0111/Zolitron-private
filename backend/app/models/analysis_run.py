@@ -6,6 +6,7 @@ from sqlalchemy.orm import relationship
 from app.db import Base
 
 
+#Dummy call for now, will be used to store the analysis runs in the future
 class AnalysisRun(Base):
     __tablename__ = "analysis_runs"
 
