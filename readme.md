@@ -162,11 +162,204 @@ Expected backend result for the current suite:
 
 The backend tests may create a local `backend/zolitron.db` SQLite file. This file is ignored by Git and should not be committed.
 
+## Frontend API Interfaces
+
+Use the backend base URL from the client environment variable when adding frontend service functions:
+
+```env
+VITE_API_BASE_URL=http://127.0.0.1:8000
+```
+
+If `VITE_API_BASE_URL` is not set, frontend services should default to the local backend URL during development.
+
+### Marker / Classification Data
+
+```text
+GET /api/classifications
+```
+
+Optional query parameters:
+
+```text
+city=Bochum
+label=garbage
+```
+
+Examples:
+
+```text
+GET /api/classifications?city=Bochum
+GET /api/classifications?label=garbage
+GET /api/classifications?city=Bochum&label=garbage
+```
+
+Response shape:
+
+```json
+[
+  {
+    "id": 1,
+    "image_id": 1,
+    "label_id": 1,
+    "category_id": 1,
+    "analysis_run_id": 1,
+    "label": "overgrown",
+    "category": "vegetation",
+    "confidence": 0.91,
+    "status": "classified",
+    "latitude": 51.4818,
+    "longitude": 7.2162,
+    "imgUrl": "/static/dummy-images/overgrown-1.jpg",
+    "city": "Bochum",
+    "country": "Germany"
+  }
+]
+```
+
+Use this endpoint for map markers and marker popups. The `label` field is intended for marker color decisions. The `imgUrl` field points to an image that can be displayed in the popup.
+
+### Images
+
+```text
+GET /api/images
+GET /api/images/{image_id}
+```
+
+Returns image metadata and image URLs. Use this when a frontend view needs image records without classification details.
+
+### Labels And Categories
+
+```text
+GET /api/labels
+GET /api/labels/categories
+```
+
+Use these endpoints if the frontend needs to build filters, legends, or label/category descriptions.
+
+Current labels:
+
+```text
+overgrown
+not-overgrown
+garbage
+not-garbage
+```
+
+Current categories:
+
+```text
+vegetation
+waste
+```
+
+### Statistics
+
+```text
+GET /api/stats
+GET /api/stats/analysis-runs
+```
+
+Use these endpoints for dashboards, counters, or backend status summaries.
+
+### Legacy Map Endpoint
+
+```text
+POST /api/map/dump-data
+```
+
+Request body:
+
+```json
+{
+  "city": "Bochum",
+  "country": "Germany"
+}
+```
+
+This currently returns the same marker-ready classification shape as `/api/classifications`, filtered by city. New frontend work should prefer `GET /api/classifications` unless it specifically needs to preserve the older map service behavior.
+
+### Static Popup Images
+
+```text
+GET /static/dummy-images/{filename}
+```
+
+Example:
+
+```text
+GET /static/dummy-images/overgrown-1.jpg
+```
+
+These files are referenced by `imgUrl` in classification/image responses.
+
+### API Errors
+
+All API errors should use this shape:
+
+```json
+{
+  "detail": "Image not found.",
+  "code": "IMAGE_NOT_FOUND"
+}
+```
+
+Frontend code should display `detail` to users when appropriate and may use `code` for branching or tests.
+
+## Backend Data Interface
+
+Backend route handlers should use service classes instead of calling repositories directly. For the current dummy data/catalog flow, use `CatalogService` from:
+
+```text
+backend/app/services/catalog.py
+```
+
+Example route-level usage:
+
+```python
+from fastapi import Depends
+from sqlalchemy.orm import Session
+
+from app.db import get_db
+from app.services.catalog import CatalogService
+
+
+def list_classifications(db: Session = Depends(get_db)):
+    return CatalogService(db).list_classifications(city="Bochum")
+```
+
+The intended dependency direction is:
+
+```text
+router -> service -> repository -> database models
+```
+
+Use each layer for this purpose:
+
+- `router`: HTTP details only, such as path parameters, query parameters, request body validation, and status codes.
+- `service`: business/data interface for the rest of the backend. Add filtering rules, AI result mapping, review logic, and marker response shaping here.
+- `repository`: SQLAlchemy queries only. Keep database access here so it can be tested and changed without rewriting route handlers.
+- `models`: persisted database entities and relationships.
+- `schemas`: response/request contracts for API clients.
+
+Do not import repository classes directly into routers for new work. This keeps route handlers thin and gives backend developers one interface to extend when dummy data is replaced by real image imports or TensorFlow predictions.
+
+Current `CatalogService` methods:
+
+```text
+seed_dummy_data()
+list_images()
+get_image(image_id)
+list_categories()
+list_labels()
+list_analysis_runs()
+list_classifications(city=None, label=None)
+stats()
+```
 ## Application Flow
 
 The current MVP is split into three layers: client, backend, and storage. The flowchart below shows the intended request path from the Vue client through the FastAPI backend and into the data/storage layer.
 
-![Zolitron application flowchart](./doc-imgs/flowchart.png)
+![Zolitron application flowchart](./doc-imgs/flowchart.svg)
 
 The flow is:
 
