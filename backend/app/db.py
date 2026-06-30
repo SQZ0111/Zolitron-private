@@ -13,7 +13,7 @@ Base = declarative_base()
 
 
 def init_db():
-    from app.models import analysis_run, category, classification, image, label  # noqa: F401
+    from app.models import analysis_run, category, classification, image, label  
 
     Base.metadata.create_all(bind=engine)
 
