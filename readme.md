@@ -104,6 +104,30 @@ npm run backend:linux
 
 Run tests from the repository root after completing the setup for your OS.
 
+## CI/CD and Deployment
+
+This repository now includes a basic CI/CD setup for GitHub Actions and deployment configuration for Render using PostgreSQL.
+
+### CI workflow
+
+The workflow in [.github/workflows/ci-cd.yml](.github/workflows/ci-cd.yml) will:
+
+- install frontend dependencies
+- run frontend tests and build
+- install backend dependencies
+- run backend tests and a syntax check
+- deploy to Render automatically after a successful push to the main branch when a Render deploy hook is configured
+
+### Render deployment
+
+The deployment configuration is in [render.yaml](render.yaml). It defines:
+
+- a backend web service for FastAPI
+- a frontend static site for the Vue app
+- a PostgreSQL database resource
+
+For the full deployment checklist, team-only environment values, and secrets, see [usage.md](usage.md).
+
 ### Frontend Tests
 
 ```bash
