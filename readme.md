@@ -159,9 +159,9 @@ Run tests from the repository root after completing the setup for your OS.
 
 ## CI/CD and Deployment
 
-This repository includes a basic CI/CD setup for GitHub Actions and deployment configuration for Render using PostgreSQL. It is not currently deployed: activation is waiting for access to the GitHub private-repository controls and secrets required to configure the workflow and Render deploy hook.
+This repository includes CI through GitHub Actions and deployment configuration for Render using PostgreSQL. It is not currently deployed: activation is waiting for access to connect and configure the private GitHub repository in Render.
 
-### CI workflow
+### CI workflow Explaination
 
 The workflow in [.github/workflows/ci-cd.yml](.github/workflows/ci-cd.yml) will:
 
@@ -169,9 +169,8 @@ The workflow in [.github/workflows/ci-cd.yml](.github/workflows/ci-cd.yml) will:
 - run frontend tests and build
 - install backend dependencies
 - run backend tests and a syntax check
-- deploy to Render automatically after a successful push to the main branch when a Render deploy hook is configured
+- publish a GitHub status check that Render uses before deploying changes from `main`
 
-Until the required GitHub access is available, the workflow and deployment files should be treated as prepared configuration, not as evidence of an active deployment. Once access is granted, configure the repository secrets, run the workflow without deployment first, verify all build steps, and only then enable the Render deploy hook.
 
 ### Render deployment
 
