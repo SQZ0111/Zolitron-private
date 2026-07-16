@@ -1,10 +1,4 @@
-﻿from fastapi.testclient import TestClient
-from app.main import app
-
-client = TestClient(app)
-
-
-def test_get_dump_data_returns_successful_response():
+def test_get_dump_data_returns_successful_response(client):
     response = client.post(
         "/api/map/dump-data",
         json={

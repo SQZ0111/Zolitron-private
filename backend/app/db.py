@@ -3,10 +3,16 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./zolitron.db")
+def normalize_database_url(database_url: str) -> str:
+    """Convert Render's legacy Postgres scheme into SQLAlchemy's driver URL."""
+    if database_url.startswith("postgres://"):
+        return database_url.replace("postgres://", "postgresql+psycopg2://", 1)
+    return database_url
 
-if DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
+
+DATABASE_URL = normalize_database_url(
+    os.getenv("DATABASE_URL", "sqlite:///./zolitron.db")
+)
 
 engine_kwargs = {}
 if DATABASE_URL.startswith("sqlite"):

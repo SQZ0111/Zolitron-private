@@ -1,10 +1,4 @@
 ﻿from app.db import Base
-from app.main import app
-from fastapi.testclient import TestClient
-
-client = TestClient(app)
-
-
 def test_normalized_tables_exist_in_metadata():
     expected_tables = {
         "images",
@@ -17,7 +11,7 @@ def test_normalized_tables_exist_in_metadata():
     assert expected_tables.issubset(set(Base.metadata.tables.keys()))
 
 
-def test_images_endpoint_returns_dummy_images_with_img_url():
+def test_images_endpoint_returns_dummy_images_with_img_url(client):
     response = client.get("/api/images")
 
     assert response.status_code == 200
@@ -29,7 +23,7 @@ def test_images_endpoint_returns_dummy_images_with_img_url():
     assert data[0]["country"] == "Germany"
 
 
-def test_classifications_endpoint_returns_marker_ready_data():
+def test_classifications_endpoint_returns_marker_ready_data(client):
     response = client.get("/api/classifications")
 
     assert response.status_code == 200
@@ -42,7 +36,7 @@ def test_classifications_endpoint_returns_marker_ready_data():
     assert all("longitude" in item for item in data)
 
 
-def test_classifications_can_filter_by_city_and_label():
+def test_classifications_can_filter_by_city_and_label(client):
     response = client.get("/api/classifications", params={"city": "Bochum", "label": "garbage"})
 
     assert response.status_code == 200
@@ -53,7 +47,7 @@ def test_classifications_can_filter_by_city_and_label():
     assert data[0]["label"] == "garbage"
 
 
-def test_labels_and_categories_endpoints_return_json():
+def test_labels_and_categories_endpoints_return_json(client):
     labels_response = client.get("/api/labels")
     categories_response = client.get("/api/labels/categories")
 
@@ -63,7 +57,7 @@ def test_labels_and_categories_endpoints_return_json():
     assert len(categories_response.json()) >= 2
 
 
-def test_stats_endpoint_returns_counts():
+def test_stats_endpoint_returns_counts(client):
     response = client.get("/api/stats")
 
     assert response.status_code == 200
@@ -74,7 +68,7 @@ def test_stats_endpoint_returns_counts():
     assert data["classifications_by_label"]["garbage"] == 1
 
 
-def test_missing_image_uses_safe_error_schema():
+def test_missing_image_uses_safe_error_schema(client):
     response = client.get("/api/images/9999")
 
     assert response.status_code == 404

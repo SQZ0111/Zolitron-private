@@ -101,7 +101,7 @@ Implemented and reachable now:
 
 
 
-## Setup From A Fresh Clone
+## Setup
 
 Run commands from the repository root.
 
@@ -127,7 +127,7 @@ The local URLs are:
 - Backend: http://127.0.0.1:8000
 - FastAPI docs: http://127.0.0.1:8000/docs
 
-## Useful Commands
+## Starting the app
 
 Run both frontend and backend:
 
