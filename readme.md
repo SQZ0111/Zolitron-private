@@ -112,7 +112,7 @@ Current limitations and next steps:
 9. Add detection service/router tests later; model-specific tests are intentionally deferred at the current stage.
 10. Add monitoring that records request duration and failures without logging API keys or private image data.
 
-Do not use `backend/app/services/trash_model_connection/Detect_trash.py` as the application integration. It is a standalone/legacy script; production backend calls should go through `DetectionService`.
+Do not use `backend/app/services/trash_model_connection/trash_detection.py` as the application integration. It is a standalone/legacy script; production backend calls should go through `DetectionService`.
 
 ## Setup From A Fresh Clone
 
