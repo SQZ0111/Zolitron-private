@@ -99,20 +99,7 @@ Implemented and reachable now:
 - missing credentials or a missing SDK return a controlled service-unavailable response instead of preventing backend startup
 - Render and GitHub Actions are configured for Python 3.11, which is compatible with the pinned inference SDK
 
-Current limitations and next steps:
 
-1. Run a manual end-to-end request using an authorized `ROBOFLOW_API_KEY` and a representative local image and HTTPS image URL.
-2. Confirm the live workflow output still uses `predictions.predictions` and the expected `garbage` and `litter` class names. Adjust the response adapter if the workflow schema differs.
-3. Validate confidence thresholds against representative images and record the chosen values as model configuration rather than permanent code constants.
-4. Add URL/file validation, request timeouts, maximum image-size handling, and safe restrictions for remotely fetched images.
-5. Persist the raw model label, confidence, processing status, model/workflow version, and image relationship through the service/repository layers.
-6. Connect successful detections to the map classification response and marker flow.
-7. Add low-confidence review handling and the planned statuses: `pending`, `classified`, `low-confidence`, and `reviewed`.
-8. Add batch processing with a configurable batch size and failure handling after single-image inference is verified.
-9. Add detection service/router tests later; model-specific tests are intentionally deferred at the current stage.
-10. Add monitoring that records request duration and failures without logging API keys or private image data.
-
-Do not use `backend/app/services/trash_model_connection/trash_detection.py` as the application integration. It is a standalone/legacy script; production backend calls should go through `DetectionService`.
 
 ## Setup From A Fresh Clone
 
