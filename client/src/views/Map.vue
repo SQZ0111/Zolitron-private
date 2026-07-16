@@ -37,6 +37,7 @@ const mapContainer = ref(null)
 
 onMounted(() => {
   const apiKey = import.meta.env.VITE_MAPTILER_KEY
+  console.log(apiKey);
   const map = new Map({
     container: mapContainer.value,
     style: `https://api.maptiler.com/maps/streets-v2/style.json?key=${apiKey}`,
