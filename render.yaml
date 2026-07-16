@@ -1,8 +1,15 @@
+databases:
+  - name: zolitron-db
+    databaseName: zolitron
+    user: zolitron
+    plan: free
+
 services:
   - type: web
     name: zolitron-backend
     env: python
     plan: free
+    autoDeployTrigger: checksPass
     buildCommand: "cd backend && pip install -r requirements.txt"
     startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
     envVars:
@@ -15,7 +22,7 @@ services:
       - key: CORS_ORIGINS
         value: https://zolitron-frontend.onrender.com,http://localhost:5173
       - key: ROBOFLOW_API_KEY
-        value: ""
+        sync: false
       - key: ROBOFLOW_WORKSPACE
         value: yoav1s-workspace
       - key: ROBOFLOW_WORKFLOW_ID
@@ -25,10 +32,11 @@ services:
 
   - type: static
     name: zolitron-frontend
+    autoDeployTrigger: checksPass
     buildCommand: "npm install && npm run install:client && npm --prefix client run build"
     staticPublishPath: client/dist
     envVars:
       - key: VITE_API_BASE_URL
         value: https://zolitron-backend.onrender.com
       - key: VITE_MAPTILER_KEY
-        value: ""
+        sync: false
