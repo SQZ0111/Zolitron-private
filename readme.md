@@ -163,6 +163,8 @@ This repository includes CI through GitHub Actions and deployment configuration 
 
 ### CI workflow Explaination
 
+[Infrastructure-as-a-service](https://render.com/docs/infrastructure-as-code)
+
 The workflow in [.github/workflows/ci-cd.yml](.github/workflows/ci-cd.yml) will:
 
 - install frontend dependencies
