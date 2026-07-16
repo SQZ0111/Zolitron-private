@@ -9,14 +9,14 @@ Users select a German city or area, the system retrieves or imports image data, 
 - Frontend: Vue 3, Vite, Vuetify, Vue Router, MapLibre GL
 - Backend: Python, FastAPI, SQLAlchemy, Pydantic
 - Storage: SQLite for metadata and local disk for image files
-- AI/ML: TensorFlow and Pillow for image classification work
+- AI/ML: Roboflow workflow inference through `inference-sdk`; TensorFlow and Pillow remain available for other image-classification work
 
 ## Prerequisites
 
 Install these before cloning/running the project:
 
 - [Node.js](https://nodejs.org/)
-- [Python](https://www.python.org/downloads/)
+- [Python 3.11 or 3.12](https://www.python.org/downloads/) (`inference-sdk==0.20.0` is not supported by the project's current setup on Python 3.13)
 
 Verify them from a terminal:
 
@@ -47,6 +47,72 @@ VITE_MAPTILER_KEY=YOUR_KEY
 ```
 
 You can get a key from the MapTiler account page: https://cloud.maptiler.com/account/keys
+
+To use the trash-detection model locally, create `backend/.env` and add:
+
+```env
+ROBOFLOW_API_KEY=YOUR_PRIVATE_API_KEY
+ROBOFLOW_WORKSPACE=yoav1s-workspace
+ROBOFLOW_WORKFLOW_ID=trash-vtrash-t8mku-2-rfdetr-large-t1-logic-2
+ROBOFLOW_API_URL=https://serverless.roboflow.com
+```
+
+Never commit the API key. The workspace, workflow ID, and API URL have application defaults, but keeping them in the environment makes the model replaceable without changing backend code.
+
+## Model Integration Status
+
+The model connection was changed from the `roboflow` Python module to the `inference-sdk` module because the configured model is a Roboflow Workflow, not a standard Roboflow project-version prediction endpoint. The active backend integration now lives in `backend/app/services/detection.py` and calls `InferenceHTTPClient.run_workflow(...)`. The former `Roboflow(...).workspace(...).project(...).predict(...)` implementation treated the workflow ID as a project ID and therefore caused connection and lookup errors. Roboflow remains the external model platform; only the Python client module used to reach its serverless workflow has changed.
+
+The current request path is:
+
+```text
+POST /api/detections/classify
+  -> detection router
+  -> DetectionService
+  -> InferenceHTTPClient.run_workflow(...)
+  -> Roboflow serverless workflow
+  -> confidence filtering and API response mapping
+```
+
+Request example:
+
+```json
+{
+  "image_url": "https://example.com/street-image.jpg",
+  "city": "Bochum",
+  "country": "Germany"
+}
+```
+
+The response contains accepted predictions, bounding-box coordinates, `garbage_count`, `litter_count`, and `total_detections`. The service currently applies these per-class confidence thresholds:
+
+- `garbage`: `0.65`
+- `litter`: `0.60`
+
+Implemented and reachable now:
+
+- the `/api/detections/classify` route is registered in FastAPI and appears in `/docs`
+- the router, schemas, and service import chain is connected
+- the workflow receives the configured workspace, workflow ID, API URL, and image input
+- workflow list output is unwrapped and mapped into the API response
+- failed workflow calls are retried up to three times with exponential backoff
+- missing credentials or a missing SDK return a controlled service-unavailable response instead of preventing backend startup
+- Render and GitHub Actions are configured for Python 3.11, which is compatible with the pinned inference SDK
+
+Current limitations and next steps:
+
+1. Run a manual end-to-end request using an authorized `ROBOFLOW_API_KEY` and a representative local image and HTTPS image URL.
+2. Confirm the live workflow output still uses `predictions.predictions` and the expected `garbage` and `litter` class names. Adjust the response adapter if the workflow schema differs.
+3. Validate confidence thresholds against representative images and record the chosen values as model configuration rather than permanent code constants.
+4. Add URL/file validation, request timeouts, maximum image-size handling, and safe restrictions for remotely fetched images.
+5. Persist the raw model label, confidence, processing status, model/workflow version, and image relationship through the service/repository layers.
+6. Connect successful detections to the map classification response and marker flow.
+7. Add low-confidence review handling and the planned statuses: `pending`, `classified`, `low-confidence`, and `reviewed`.
+8. Add batch processing with a configurable batch size and failure handling after single-image inference is verified.
+9. Add detection service/router tests later; model-specific tests are intentionally deferred at the current stage.
+10. Add monitoring that records request duration and failures without logging API keys or private image data.
+
+Do not use `backend/app/services/trash_model_connection/Detect_trash.py` as the application integration. It is a standalone/legacy script; production backend calls should go through `DetectionService`.
 
 ## Setup From A Fresh Clone
 
@@ -106,7 +172,7 @@ Run tests from the repository root after completing the setup for your OS.
 
 ## CI/CD and Deployment
 
-This repository now includes a basic CI/CD setup for GitHub Actions and deployment configuration for Render using PostgreSQL.
+This repository includes a basic CI/CD setup for GitHub Actions and deployment configuration for Render using PostgreSQL. It is not currently deployed: activation is waiting for access to the GitHub private-repository controls and secrets required to configure the workflow and Render deploy hook.
 
 ### CI workflow
 
@@ -117,6 +183,8 @@ The workflow in [.github/workflows/ci-cd.yml](.github/workflows/ci-cd.yml) will:
 - install backend dependencies
 - run backend tests and a syntax check
 - deploy to Render automatically after a successful push to the main branch when a Render deploy hook is configured
+
+Until the required GitHub access is available, the workflow and deployment files should be treated as prepared configuration, not as evidence of an active deployment. Once access is granted, configure the repository secrets, run the workflow without deployment first, verify all build steps, and only then enable the Render deploy hook.
 
 ### Render deployment
 

@@ -2,14 +2,18 @@ import logging
 import os
 from contextlib import asynccontextmanager
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
+# Load environment variables from .env file
+load_dotenv()
+
 from app.db import SessionLocal, init_db
-from app.router import classifications, images, labels, map, stats
+from app.router import classifications, detections, images, labels, map, stats
 from app.services.catalog import CatalogService
 
 logger = logging.getLogger(__name__)
@@ -34,7 +38,10 @@ def get_cors_origins() -> list[str]:
 
 
 app = FastAPI(lifespan=lifespan)
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+static_dir = os.path.join(os.path.dirname(__file__), "static")
+if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 app.add_middleware(
     CORSMiddleware,
@@ -76,6 +83,7 @@ def unhandled_exception_handler(request: Request, exc: Exception):
 app.include_router(map.router)
 app.include_router(images.router)
 app.include_router(classifications.router)
+app.include_router(detections.router)
 app.include_router(labels.router)
 app.include_router(stats.router)
 
