@@ -27,12 +27,12 @@ class CatalogService:
         return self.repository.list_analysis_runs()
 
     def list_classifications(self, city: str | None = None, label: str | None = None) -> list[ClassificationRead]:
-        return [self._classification_to_schema(item) for item in self.repository.list_classifications(city, label)]
+        return [self.classification_to_schema(item) for item in self.repository.list_classifications(city, label)]
 
     def stats(self):
         return self.repository.stats()
 
-    def _classification_to_schema(self, item):
+    def classification_to_schema(self, item):
         return ClassificationRead(
             id=item.id,
             image_id=item.image_id,

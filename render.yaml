@@ -29,12 +29,18 @@ services:
         value: trash-vtrash-t8mku-2-rfdetr-large-t1-logic-2
       - key: ROBOFLOW_API_URL
         value: https://serverless.roboflow.com
+      - key: MAPILLARY_ACCESS_TOKEN
+        sync: false
 
   - type: static
     name: zolitron-frontend
     autoDeployTrigger: checksPass
     buildCommand: "npm install && npm run install:client && npm --prefix client run build"
     staticPublishPath: client/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
     envVars:
       - key: VITE_API_BASE_URL
         value: https://zolitron-backend.onrender.com

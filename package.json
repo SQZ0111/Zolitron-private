@@ -5,7 +5,7 @@
   "license": "ISC",
   "author": "",
   "scripts": {
-    "create:venv:win": "py -3 -m venv backend/venv",
+    "create:venv:win": "py -3.11 -m venv backend/venv",
     "create:venv:mac": "python3 -m venv backend/venv",
     "create:venv:linux": "python3 -m venv backend/venv",
     "install:all:win": "npm run install:client && npm run create:venv:win && npm run install:backend",

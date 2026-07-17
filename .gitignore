@@ -125,6 +125,10 @@ dist
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
 
+# Runtime image storage (those folder are dev only)
+backend/app/static/uploads/
+backend/app/static/mapillary/
+
 # yarn v2
 .yarn/cache
 .yarn/unplugged
