@@ -111,6 +111,17 @@ def read_root():
                 "example": "/api/images/1",
             },
             {
+                "method": "POST",
+                "path": "/api/images/upload",
+                "description": "Store and classify one uploaded JPEG or PNG image.",
+            },
+            {
+                "method": "POST",
+                "path": "/api/images/import/mapillary",
+                "description": "Fetch, store, and classify a limited Mapillary sample for a German city.",
+                "body_example": {"city": "Bochum", "country": "Germany", "limit": 5},
+            },
+            {
                 "method": "GET",
                 "path": "/api/classifications",
                 "description": "List marker-ready classification objects with label, category, confidence, coordinates, city, country, and imgUrl.",

@@ -1,61 +1,139 @@
 <script setup>
-import { ref } from 'vue'
+import { ref } from "vue"
 
-const files = ref(undefined)
-const error = ref('')
-const uploadedFiles = ref([])
+import { uploadImage } from "../services/imageService"
+import { validateUploadInput } from "../utils/uploadValidation"
 
-const handleUpload = (newFiles) => {
-    try {
-        if (!newFiles || !newFiles.length) {
-            throw new Error('Please select at least one file')
-        }
+const files = ref([])
+const city = ref("")
+const country = ref("Germany")
+const latitude = ref("")
+const longitude = ref("")
+const error = ref("")
+const uploading = ref(false)
+const uploadedMarkers = ref([])
 
-        uploadedFiles.value = [...uploadedFiles.value, ...newFiles]
-        console.log(`${newFiles.length} file(s) uploaded successfully`)
-        files.value = undefined
-        error.value = ''
-    } catch (err) {
-        error.value = err.message
-        console.error(err)
+const handleUpload = async () => {
+  error.value = ""
+
+  try {
+    validateUploadInput(files.value, city.value, country.value)
+    uploading.value = true
+
+    const metadata = {
+      city: city.value,
+      country: country.value,
+      latitude: latitude.value,
+      longitude: longitude.value,
     }
-}
 
+    for (const file of files.value) {
+      const marker = await uploadImage(file, metadata)
+      uploadedMarkers.value.push({
+        ...marker,
+        filename: file.name,
+      })
+    }
+
+    files.value = []
+  } catch (uploadError) {
+    error.value = uploadError.message
+  } finally {
+    uploading.value = false
+  }
+}
 </script>
 
-
 <template>
-    <v-row>
-        <v-col cols="12" md="8" offset-md="2">
-            <v-card class="pa-6">
-                <v-card-title class="text-h4">Garbage Site Upload</v-card-title>
-                <v-card-text>
-                    <v-alert v-if="error" type="error" class="mb-4">{{ error }}</v-alert> 
+  <v-row>
+    <v-col cols="12" md="8" offset-md="2">
+      <v-card class="pa-6">
+        <v-card-title class="text-h4">Garbage Site Upload</v-card-title>
+        <v-card-text>
+          <v-alert v-if="error" type="error" class="mb-4">
+            {{ error }}
+          </v-alert>
 
-                    <v-file-input class="mt-4" v-model="files" label="Select files" multiple variant="outlined"
-                        prepend-icon="mdi-cloud-upload" @update:model-value="handleUpload">
-                    </v-file-input>
-                    
-                    <v-divider class="my-4"></v-divider>
+          <v-text-field
+            v-model="city"
+            label="City"
+            variant="outlined"
+            :disabled="uploading"
+          />
+          <v-text-field
+            v-model="country"
+            label="Country"
+            variant="outlined"
+            :disabled="uploading"
+          />
 
-                    <div v-if="uploadedFiles.length">
-                        <h3 class="text-h6 mb-3">Uploaded Files</h3>
-                        <v-list>
-                            <v-list-item v-for="(file, index) in uploadedFiles" :key="index">
-                                <v-list-item-title>{{ file.name }}</v-list-item-title>
-                                <v-list-item-subtitle>{{ (file.size / 1024).toFixed(2) }} KB</v-list-item-subtitle>
-                            </v-list-item>
-                        </v-list>
-                    </div>
-                </v-card-text>
-            </v-card>
-        </v-col>
-    </v-row>
+          <v-row>
+            <v-col cols="12" sm="6">
+              <v-text-field
+                v-model="latitude"
+                label="Latitude (optional)"
+                type="number"
+                variant="outlined"
+                :disabled="uploading"
+              />
+            </v-col>
+            <v-col cols="12" sm="6">
+              <v-text-field
+                v-model="longitude"
+                label="Longitude (optional)"
+                type="number"
+                variant="outlined"
+                :disabled="uploading"
+              />
+            </v-col>
+          </v-row>
+
+          <v-file-input
+            v-model="files"
+            label="Select JPEG or PNG images"
+            accept="image/jpeg,image/png"
+            multiple
+            variant="outlined"
+            prepend-icon="mdi-cloud-upload"
+            :disabled="uploading"
+          />
+
+          <v-btn
+            color="primary"
+            :loading="uploading"
+            :disabled="uploading"
+            @click="handleUpload"
+          >
+            Upload and classify
+          </v-btn>
+
+          <v-divider class="my-4" />
+
+          <div v-if="uploadedMarkers.length">
+            <h3 class="text-h6 mb-3">Classified images</h3>
+            <v-list>
+              <v-list-item
+                v-for="marker in uploadedMarkers"
+                :key="`${marker.image_id}-${marker.filename}`"
+              >
+                <v-list-item-title>
+                  {{ marker.filename }} — {{ marker.label }}
+                </v-list-item-title>
+                <v-list-item-subtitle>
+                  Confidence: {{ marker.confidence.toFixed(2) }} |
+                  Status: {{ marker.status }}
+                </v-list-item-subtitle>
+              </v-list-item>
+            </v-list>
+          </div>
+        </v-card-text>
+      </v-card>
+    </v-col>
+  </v-row>
 </template>
-
 
 <style scoped>
 .v-card {
-    border-radius: 12px;
+  border-radius: 12px;
 }
 </style>
