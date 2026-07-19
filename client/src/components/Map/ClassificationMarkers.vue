@@ -2,7 +2,10 @@
 import { onBeforeUnmount, watch } from "vue"
 import { Marker, Popup } from "maplibre-gl"
 
-import { resolveBackendImageUrl } from "../../services/mapService"
+import {
+  isTrashClassification,
+  resolveBackendImageUrl,
+} from "../../services/mapService"
 
 const props = defineProps({
   map: {
@@ -20,23 +23,6 @@ let renderedMarkers = []
 function clearMarkers() {
   renderedMarkers.forEach((marker) => marker.remove())
   renderedMarkers = []
-}
-
-function markerColor(classification) {
-  if (
-    classification.status === "low-confidence" ||
-    classification.label === "not-overgrown" ||
-    classification.label === "not-garbage"
-  ) {
-    return "#68717d"
-  }
-  if (
-    classification.category === "vegetation" ||
-    classification.label === "overgrown"
-  ) {
-    return "#36a568"
-  }
-  return "#990066"
 }
 
 function createPopupContent(classification) {
@@ -75,6 +61,10 @@ function renderMarkers() {
   if (!props.map) return
 
   for (const classification of props.classifications) {
+    if (!isTrashClassification(classification)) {
+      continue
+    }
+
     const latitude = Number(classification.latitude)
     const longitude = Number(classification.longitude)
     if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
@@ -85,7 +75,7 @@ function renderMarkers() {
       createPopupContent(classification),
     )
     renderedMarkers.push(
-      new Marker({ color: markerColor(classification) })
+      new Marker({ color: "#990066" })
         .setLngLat([longitude, latitude])
         .setPopup(popup)
         .addTo(props.map),

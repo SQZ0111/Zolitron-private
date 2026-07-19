@@ -2,16 +2,8 @@
   <aside class="map-legend" aria-label="Map marker legend">
     <h2 class="legend-title">Legend</h2>
     <div class="legend-item">
-      <span class="legend-color legend-color--garbage" />
-      <span>Garbage or dumping</span>
-    </div>
-    <div class="legend-item">
-      <span class="legend-color legend-color--vegetation" />
-      <span>Vegetation</span>
-    </div>
-    <div class="legend-item">
-      <span class="legend-color legend-color--review" />
-      <span>Clean or needs review</span>
+      <span class="legend-color" />
+      <span>Trash or litter detection</span>
     </div>
   </aside>
 </template>
@@ -48,18 +40,7 @@
   height: 14px;
   flex: 0 0 auto;
   border-radius: 50%;
-}
-
-.legend-color--garbage {
   background: #990066;
-}
-
-.legend-color--vegetation {
-  background: #36a568;
-}
-
-.legend-color--review {
-  background: #68717d;
 }
 
 @media (max-width: 600px) {

@@ -21,12 +21,21 @@ export async function fetchClassificationMarkers(city) {
   if (city?.trim()) {
     query.set("city", city.trim())
   }
+  query.set("label", "garbage")
 
-  const suffix = query.size ? `?${query.toString()}` : ""
-  const response = await fetch(`${API_BASE_URL}/api/classifications${suffix}`)
-  return parseResponse(
+  const response = await fetch(
+    `${API_BASE_URL}/api/classifications?${query.toString()}`,
+  )
+  const classifications = await parseResponse(
     response,
     `Could not load map markers: ${response.status}`,
+  )
+  return classifications.filter(isTrashClassification)
+}
+
+export function isTrashClassification(classification) {
+  return ["garbage", "litter"].includes(
+    classification?.label?.trim().toLowerCase(),
   )
 }
 
