@@ -3,7 +3,7 @@ import { onBeforeUnmount, watch } from "vue"
 import { Marker, Popup } from "maplibre-gl"
 
 import {
-  isTrashClassification,
+  isVisibleTrashMarker,
   resolveBackendImageUrl,
 } from "../../services/mapService"
 
@@ -61,7 +61,7 @@ function renderMarkers() {
   if (!props.map) return
 
   for (const classification of props.classifications) {
-    if (!isTrashClassification(classification)) {
+    if (!isVisibleTrashMarker(classification)) {
       continue
     }
 

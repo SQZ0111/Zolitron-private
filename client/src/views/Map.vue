@@ -20,6 +20,8 @@ const mapContainer = ref(null)
 const map = ref(null)
 const classifications = ref([])
 const currentCity = ref(INITIAL_LOCATION.city)
+const selectedLocation = ref(INITIAL_LOCATION)
+const cityDialogOpen = ref(false)
 const loadingMarkers = ref(false)
 const markerError = ref("")
 
@@ -38,11 +40,22 @@ async function loadMarkers(city) {
 }
 
 function handleLocationFound(location) {
+  selectedLocation.value = location
   map.value?.flyTo({
     center: [location.longitude, location.latitude],
     zoom: 13,
   })
   loadMarkers(location.city)
+}
+
+function resetMapView() {
+  map.value?.flyTo({
+    center: [
+      selectedLocation.value.longitude,
+      selectedLocation.value.latitude,
+    ],
+    zoom: INITIAL_LOCATION.zoom,
+  })
 }
 
 onMounted(() => {
@@ -72,8 +85,16 @@ onBeforeUnmount(() => {
   <div class="map-page">
     <div ref="mapContainer" class="map" />
 
-    <MapSearch @location-found="handleLocationFound" />
-    <MapLegend />
+    <MapSearch
+      v-model="cityDialogOpen"
+      :current-city="currentCity"
+      @location-found="handleLocationFound"
+    />
+    <MapLegend
+      :current-city="currentCity"
+      @change-city="cityDialogOpen = true"
+      @reset-view="resetMapView"
+    />
     <ClassificationMarkers
       :map="map"
       :classifications="classifications"

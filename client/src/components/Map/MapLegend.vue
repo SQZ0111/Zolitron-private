@@ -1,10 +1,76 @@
+<script setup>
+import { ref } from "vue"
+
+import { navigationLinks } from "../../router/navigation"
+
+defineProps({
+  currentCity: {
+    type: String,
+    default: "Bochum",
+  },
+})
+
+defineEmits(["change-city", "reset-view"])
+
+const navigationOpen = ref(false)
+</script>
+
 <template>
   <aside class="map-legend" aria-label="Map marker legend">
     <h2 class="legend-title">Legend</h2>
     <div class="legend-item">
       <span class="legend-color" />
-      <span>Trash or litter detection</span>
+      <span>Trash/litter at least 60%</span>
     </div>
+    <v-btn
+      class="change-city"
+      color="primary"
+      variant="tonal"
+      size="small"
+      block
+      prepend-icon="mdi-map-search-outline"
+      @click="$emit('change-city')"
+    >
+      {{ currentCity }} - Change city
+    </v-btn>
+    <v-btn
+      class="reset-view"
+      variant="text"
+      size="small"
+      block
+      prepend-icon="mdi-crosshairs-gps"
+      @click="$emit('reset-view')"
+    >
+      Reset view
+    </v-btn>
+    <v-menu
+      v-model="navigationOpen"
+      location="top end"
+      :close-on-content-click="true"
+    >
+      <template #activator="{ props }">
+        <v-btn
+          v-bind="props"
+          class="navigation-menu"
+          variant="text"
+          size="small"
+          block
+          prepend-icon="mdi-menu"
+        >
+          Navigation
+        </v-btn>
+      </template>
+
+      <v-list nav aria-label="Application navigation">
+        <v-list-item
+          v-for="link in navigationLinks"
+          :key="link.route"
+          :to="link.route"
+          :title="link.name"
+          @click="navigationOpen = false"
+        />
+      </v-list>
+    </v-menu>
   </aside>
 </template>
 
@@ -41,6 +107,15 @@
   flex: 0 0 auto;
   border-radius: 50%;
   background: #990066;
+}
+
+.change-city {
+  margin-top: 12px;
+}
+
+.reset-view,
+.navigation-menu {
+  margin-top: 4px;
 }
 
 @media (max-width: 600px) {

@@ -5,6 +5,8 @@ const progress = ref(0)
 const message = ref("Ready")
 const error = ref("")
 const processedCount = ref(0)
+let observedJobId = null
+let observedItemCount = 0
 
 export const imagePipelineState = {
   state: readonly(state),
@@ -22,8 +24,16 @@ export const imagePipelineState = {
     progress.value = status.progress ?? 0
     message.value = status.message || status.state
     error.value = status.error || ""
-    if (status.state === "ready") {
-      processedCount.value += status.items?.length || 0
+
+    const jobId = status.jobId || status.job_id || null
+    const itemCount = Array.isArray(status.items) ? status.items.length : 0
+    if (jobId && jobId !== observedJobId) {
+      observedJobId = jobId
+      observedItemCount = 0
+    }
+    if (jobId && itemCount > observedItemCount) {
+      processedCount.value += itemCount - observedItemCount
+      observedItemCount = itemCount
     }
   },
   reset() {
@@ -32,5 +42,7 @@ export const imagePipelineState = {
     message.value = "Ready"
     error.value = ""
     processedCount.value = 0
+    observedJobId = null
+    observedItemCount = 0
   },
 }

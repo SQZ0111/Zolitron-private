@@ -136,16 +136,22 @@ class MapillaryBatchJobManager:
                     progress=45 + round(completed_ratio * 50),
                     message=f"Classifying image {index + 1} of {len(source_images)}",
                 )
-                items.append(
-                    processor.store_and_classify(
-                        content=content,
-                        city=request.city,
-                        country=request.country,
-                        latitude=source_image["latitude"],
-                        longitude=source_image["longitude"],
-                        source="mapillary",
-                        namespace="mapillary",
-                    )
+                classification = processor.store_and_classify(
+                    content=content,
+                    city=request.city,
+                    country=request.country,
+                    latitude=source_image["latitude"],
+                    longitude=source_image["longitude"],
+                    source="mapillary",
+                    namespace="mapillary",
+                )
+                items.append(classification)
+                self.update(
+                    job_id,
+                    state="processing",
+                    progress=45 + round(((index + 1) / total) * 50),
+                    message=f"Processed image {index + 1} of {len(source_images)}",
+                    items=list(items),
                 )
 
             self.update(

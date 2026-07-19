@@ -1,6 +1,8 @@
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"
 
+export const MIN_TRASH_MARKER_CONFIDENCE = 0.6
+
 async function parseResponse(response, fallbackMessage) {
   if (response.ok) {
     return response.json()
@@ -11,7 +13,7 @@ async function parseResponse(response, fallbackMessage) {
     const error = await response.json()
     message = error.detail || message
   } catch {
-    // Keep a stable fallback when the server does not return JSON.
+
   }
   throw new Error(message)
 }
@@ -30,12 +32,22 @@ export async function fetchClassificationMarkers(city) {
     response,
     `Could not load map markers: ${response.status}`,
   )
-  return classifications.filter(isTrashClassification)
+  return classifications.filter(isVisibleTrashMarker)
 }
 
 export function isTrashClassification(classification) {
   return ["garbage", "litter"].includes(
     classification?.label?.trim().toLowerCase(),
+  )
+}
+
+export function isVisibleTrashMarker(classification) {
+  const confidence = Number(classification?.confidence)
+  return (
+    isTrashClassification(classification) &&
+    Number.isFinite(confidence) &&
+    confidence >= MIN_TRASH_MARKER_CONFIDENCE &&
+    classification.status !== "low-confidence"
   )
 }
 

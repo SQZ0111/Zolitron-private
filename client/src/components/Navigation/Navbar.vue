@@ -2,25 +2,25 @@
 import { ref } from 'vue'
 
 import ImagePipelineControl from './ImagePipelineControl.vue'
+import { navigationLinks } from '../../router/navigation'
 
 const navigationOpen = ref(false)
-
-const tabs = [
-  { name: 'Home', route: '/' },
-  { name: 'About', route: '/about' },
-  { name: 'Map', route: '/map' },
-  { name: 'Report Bug', route: '/report' },
-  { name: 'Uploads', route: '/uploads' }
-]
 </script>
 
 <template>
-  <v-app-bar app color="primary" dark>
+  <v-app-bar
+    app
+    class="main-navbar"
+    color="primary"
+    dark
+    height="64"
+    elevation="4"
+  >
     <v-toolbar-title class="brand-title">Zolitron2</v-toolbar-title>
     <ImagePipelineControl />
     <v-spacer></v-spacer>
     <v-tabs class="d-none d-md-flex" centered>
-      <v-tab v-for="tab in tabs" :key="tab.route" :to="tab.route">
+      <v-tab v-for="tab in navigationLinks" :key="tab.route" :to="tab.route">
         {{ tab.name }}
       </v-tab>
     </v-tabs>
@@ -40,7 +40,7 @@ const tabs = [
       </template>
       <v-list nav>
         <v-list-item
-          v-for="tab in tabs"
+          v-for="tab in navigationLinks"
           :key="tab.route"
           :to="tab.route"
           :title="tab.name"
@@ -56,6 +56,14 @@ const tabs = [
 <style scoped>
 .brand-title {
   flex: 0 0 auto;
+}
+
+.main-navbar {
+  position: fixed !important;
+  top: 0 !important;
+  right: 0 !important;
+  left: 0 !important;
+  z-index: 2500 !important;
 }
 
 .v-tab {

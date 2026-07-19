@@ -363,4 +363,5 @@ onBeforeUnmount(() => {
     width: 72px;
   }
 }
+
 </style>

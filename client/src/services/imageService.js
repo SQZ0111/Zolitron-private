@@ -11,7 +11,7 @@ async function parseResponse(response, fallbackMessage) {
     const error = await response.json()
     message = error.detail || message
   } catch {
-    // Preserve the fallback when the server does not return JSON.
+
   }
   throw new Error(message)
 }
