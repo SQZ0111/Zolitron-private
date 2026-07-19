@@ -285,7 +285,7 @@ Response shape:
 ]
 ```
 
-This endpoint provides the data for the future marker implementation. The client-side marker fetch and rendering are not implemented yet. The `label` field is intended for marker color decisions, and `imgUrl` points to the related image when that file is available.
+The map client fetches this endpoint when the page opens, after a city search, and after a Mapillary processing job reports newly processed images. Marker rendering is isolated in `client/src/components/Map/ClassificationMarkers.vue`; popups display the classification image, label, category, confidence, status, and location. The marker legend uses purple for garbage/dumping, green for vegetation, and gray for clean or review results.
 
 ### Images
 
@@ -385,7 +385,7 @@ Example:
 GET /static/dummy-images/overgrown-1.jpg
 ```
 
-Dummy database records reference these paths, but the repository currently contains no dummy JPG files. These placeholder URLs can therefore return `404`. Images created by upload or Mapillary import are stored under `/static/uploads/` or `/static/mapillary/`.
+Seeded dummy database records reference the example JPG files under this path, so they can be used to verify marker popups locally. Images created by upload or Mapillary import are stored under `/static/uploads/` or `/static/mapillary/`.
 
 ### API Errors
 
@@ -465,7 +465,7 @@ The flow is:
 5. Repositories isolate SQLite access.
 6. Storage utilities handle image files on disk so routers do not access file storage directly.
 7. The backend returns detection data to the client.
-8. The navbar reports Mapillary processing progress while the map renders the base map. Fetching stored classifications and rendering markers remain separate frontend work.
+8. The navbar reports Mapillary processing progress while the map fetches stored classifications and renders color-coded markers with image popups.
 
 ## Architecture Notes
 
