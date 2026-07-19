@@ -122,6 +122,32 @@ def read_root():
                 "body_example": {"city": "Bochum", "country": "Germany", "limit": 5},
             },
             {
+                "method": "POST",
+                "path": "/api/images/import/mapillary/batch",
+                "description": "Process an offset-paginated Mapillary batch for the map controls.",
+                "body_example": {
+                    "city": "Bochum",
+                    "country": "Germany",
+                    "limit": 5,
+                    "paginationNext": None,
+                },
+            },
+            {
+                "method": "POST",
+                "path": "/api/images/import/mapillary/jobs",
+                "description": "Start a trackable Mapillary processing job.",
+            },
+            {
+                "method": "GET",
+                "path": "/api/images/import/mapillary/jobs/{job_id}",
+                "description": "Read fetching, validation, classification, and completion progress.",
+            },
+            {
+                "method": "POST",
+                "path": "/api/images/import/mapillary/jobs/{job_id}/cancel",
+                "description": "Request cooperative cancellation of a running batch.",
+            },
+            {
                 "method": "GET",
                 "path": "/api/classifications",
                 "description": "List marker-ready classification objects with label, category, confidence, coordinates, city, country, and imgUrl.",

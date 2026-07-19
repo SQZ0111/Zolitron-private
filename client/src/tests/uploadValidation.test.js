@@ -37,4 +37,14 @@ describe("validateUploadInput", () => {
       ),
     ).toThrow("large.png exceeds the 10 MB upload limit.")
   })
+
+  it("rejects unsupported file types", () => {
+    expect(() =>
+      validateUploadInput(
+        [{ name: "notes.pdf", size: 1024, type: "application/pdf" }],
+        "Bochum",
+        "Germany",
+      ),
+    ).toThrow("notes.pdf must be a JPEG or PNG image.")
+  })
 })
