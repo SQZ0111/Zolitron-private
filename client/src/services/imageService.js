@@ -44,3 +44,62 @@ export async function importMapillaryCity(city, country = "Germany", limit = 5) 
   })
   return parseResponse(response, `Mapillary import failed: ${response.status}`)
 }
+
+export async function importMapillaryBatch(
+  city,
+  country = "Germany",
+  limit = 5,
+  paginationNext = null,
+) {
+  const body = { city: city.trim(), country: country.trim(), limit }
+  if (paginationNext) {
+    body.paginationNext = paginationNext
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/api/images/import/mapillary/batch`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    },
+  )
+  return parseResponse(response, `Mapillary batch import failed: ${response.status}`)
+}
+
+export async function startMapillaryBatchJob(
+  city,
+  country = "Germany",
+  limit = 5,
+  paginationNext = null,
+) {
+  const body = { city: city.trim(), country: country.trim(), limit }
+  if (paginationNext) {
+    body.paginationNext = paginationNext
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/api/images/import/mapillary/jobs`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    },
+  )
+  return parseResponse(response, `Could not start image processing: ${response.status}`)
+}
+
+export async function getMapillaryBatchJob(jobId) {
+  const response = await fetch(
+    `${API_BASE_URL}/api/images/import/mapillary/jobs/${encodeURIComponent(jobId)}`,
+  )
+  return parseResponse(response, `Could not read image-processing status: ${response.status}`)
+}
+
+export async function cancelMapillaryBatchJob(jobId) {
+  const response = await fetch(
+    `${API_BASE_URL}/api/images/import/mapillary/jobs/${encodeURIComponent(jobId)}/cancel`,
+    { method: "POST" },
+  )
+  return parseResponse(response, `Could not stop image processing: ${response.status}`)
+}
