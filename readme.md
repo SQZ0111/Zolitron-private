@@ -226,7 +226,7 @@ cd backend
 Expected backend result for the current suite:
 
 ```text
-9 passed
+12 passed
 ```
 
 The backend tests may create a local `backend/zolitron.db` SQLite file. This file is ignored by Git and should not be committed.
@@ -301,9 +301,13 @@ Returns image metadata and image URLs. Use this when a frontend view needs image
 ```text
 POST /api/images/upload
 POST /api/images/import/mapillary
+POST /api/images/import/mapillary/batch
+POST /api/images/import/mapillary/jobs
+GET /api/images/import/mapillary/jobs/{job_id}
+POST /api/images/import/mapillary/jobs/{job_id}/cancel
 ```
 
-`POST /api/images/upload` accepts one multipart JPEG or PNG image plus `city`, `country`, and optional `latitude` and `longitude`. The Vue upload page sends multiple selected images as individual requests.
+`POST /api/images/upload` accepts one multipart JPEG or PNG image plus `city`, `country`, and optional `latitude` and `longitude`. The responsive Vue upload page supports browsing or dragging multiple photos, sends them as individual requests, and shows persistent dismissible classification notifications.
 `POST /api/images/import/mapillary` accepts:
 
 ```json
@@ -314,7 +318,9 @@ POST /api/images/import/mapillary
 }
 ```
 
-Both endpoints store images locally below `backend/app/static/uploads` or `backend/app/static/mapillary`, classify them with the Roboflow workflow, persist image/classification metadata, and return the existing marker-friendly `ClassificationRead` shape.
+The upload and standard Mapillary import endpoints store images locally below `backend/app/static/uploads` or `backend/app/static/mapillary`, classify them with the Roboflow workflow, persist image/classification metadata, and return the existing marker-friendly `ClassificationRead` shape.
+
+The navbar's **Fetch sites** menu starts a background batch through `POST /api/images/import/mapillary/jobs`. It allows 1–25 images per batch, supports a maximum number of automatic follow-up batches, and can be stopped cooperatively. The navbar polls `GET /api/images/import/mapillary/jobs/{job_id}` to display the backend's fetching, validating, processing, stopping, ready, and error states.
 
 ### Labels And Categories
 
@@ -452,14 +458,14 @@ The current MVP is split into three layers: client, backend, and storage. The fl
 
 The flow is:
 
-1. A user opens the Vue client. City input on the map page is planned but not implemented yet.
-2. Future map-data requests should be delegated to the frontend service layer.
+1. A user opens the Vue client and can choose a German city and Mapillary batch size from the navbar.
+2. The Fetch sites menu delegates Mapillary job requests to the frontend image service.
 3. The FastAPI router receives the request and keeps endpoint logic thin.
 4. Backend services handle business rules such as validation, import, deduplication, classification, and review state changes.
 5. Repositories isolate SQLite access.
 6. Storage utilities handle image files on disk so routers do not access file storage directly.
 7. The backend returns detection data to the client.
-8. The client currently renders the base map only. City input, classification fetching, and marker rendering remain separate frontend work.
+8. The navbar reports Mapillary processing progress while the map renders the base map. Fetching stored classifications and rendering markers remain separate frontend work.
 
 ## Architecture Notes
 
