@@ -19,4 +19,14 @@ export function validateUploadInput(files, city, country) {
   if (oversizedFile) {
     throw new Error(`${oversizedFile.name} exceeds the 10 MB upload limit.`)
   }
+
+  const unsupportedFile = files.find((file) => {
+    if (file.type) {
+      return !["image/jpeg", "image/png"].includes(file.type)
+    }
+    return !/\.(jpe?g|png)$/i.test(file.name)
+  })
+  if (unsupportedFile) {
+    throw new Error(`${unsupportedFile.name} must be a JPEG or PNG image.`)
+  }
 }
