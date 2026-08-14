@@ -1,0 +1,287 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1250" viewBox="0 0 1800 1250">
+  <defs>
+    <style>
+      .title { font: 700 30px Arial, sans-serif; fill: #111; }
+      .subtitle { font: 15px Arial, sans-serif; fill: #333; }
+      .system-title { font: 700 24px Arial, sans-serif; fill: #111; }
+      .stereotype { font: italic 13px Arial, sans-serif; fill: #222; }
+      .component-title { font: 700 16px Arial, sans-serif; fill: #111; }
+      .component-text { font: 13px Arial, sans-serif; fill: #222; }
+      .note { font: 12px Arial, sans-serif; fill: #333; }
+      .interface-label { font: 12px Arial, sans-serif; fill: #222; }
+      .frame { fill: #fff; stroke: #111; stroke-width: 2; }
+      .presentation { fill: #d9ead3; stroke: #6aa84f; stroke-width: 1.6; }
+      .service { fill: #f4cccc; stroke: #cc6666; stroke-width: 1.6; }
+      .gateway { fill: #f9cb9c; stroke: #e69138; stroke-width: 1.6; }
+      .data { fill: #d9ead3; stroke: #6aa84f; stroke-width: 1.6; }
+      .external-box { fill: #eeeeee; stroke: #777; stroke-width: 1.6; }
+      .future-box { fill: #fff; stroke: #777; stroke-width: 1.5; stroke-dasharray: 7 5; }
+      .dependency { fill: none; stroke: #333; stroke-width: 1.7; stroke-dasharray: 7 5; marker-end: url(#openArrow); }
+      .connector { fill: none; stroke: #111; stroke-width: 2; }
+      .external-connector { fill: none; stroke: #555; stroke-width: 1.8; stroke-dasharray: 6 4; marker-end: url(#openArrow); }
+      .port { fill: #fff; stroke: #111; stroke-width: 1.8; }
+      .provided { fill: #fff; stroke: #111; stroke-width: 1.8; }
+    </style>
+    <marker id="openArrow" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto">
+      <path d="M1,1 L10,5 L1,9" fill="none" stroke="#333" stroke-width="1.4"/>
+    </marker>
+    <g id="componentGlyph">
+      <rect x="0" y="0" width="22" height="28" fill="#fff" stroke="#111" stroke-width="1.2"/>
+      <rect x="-7" y="6" width="12" height="6" fill="#fff" stroke="#111" stroke-width="1.2"/>
+      <rect x="-7" y="17" width="12" height="6" fill="#fff" stroke="#111" stroke-width="1.2"/>
+    </g>
+  </defs>
+
+  <rect width="1800" height="1250" fill="#fff"/>
+  <text x="30" y="42" class="title">Zolitron — UML Component Diagram</text>
+  <text x="30" y="67" class="subtitle">Current MVP architecture with layered subsystems, replaceable components, ports, interfaces and dependencies</text>
+
+  <!-- CLIENT -->
+  <rect x="20" y="90" width="1760" height="300" class="frame"/>
+  <text x="42" y="122" class="system-title">Client Subsystem</text>
+  <text x="1535" y="120" class="note">Vue 3 / Vite / Vuetify</text>
+
+  <rect x="55" y="150" width="260" height="150" class="presentation"/>
+  <text x="75" y="177" class="stereotype">«component»</text>
+  <text x="75" y="202" class="component-title">App Shell &amp; Views</text>
+  <text x="75" y="230" class="component-text">App.vue, Vue Router</text>
+  <text x="75" y="252" class="component-text">Map, Upload, Home, About</text>
+  <text x="75" y="274" class="component-text">Page-level orchestration</text>
+  <use href="#componentGlyph" x="279" y="162"/>
+
+  <rect x="350" y="150" width="285" height="150" class="presentation"/>
+  <text x="370" y="177" class="stereotype">«component»</text>
+  <text x="370" y="202" class="component-title">Map UI Components</text>
+  <text x="370" y="230" class="component-text">Legend, markers, popups</text>
+  <text x="370" y="252" class="component-text">City modal, reset, navigation</text>
+  <text x="370" y="274" class="component-text">MapLibre viewport control</text>
+  <use href="#componentGlyph" x="599" y="162"/>
+
+  <rect x="670" y="150" width="265" height="150" class="presentation"/>
+  <text x="690" y="177" class="stereotype">«component»</text>
+  <text x="690" y="202" class="component-title">Upload UI Components</text>
+  <text x="690" y="230" class="component-text">Upload form and validation</text>
+  <text x="690" y="252" class="component-text">Classification notifications</text>
+  <text x="690" y="274" class="component-text">Sequential image submission</text>
+  <use href="#componentGlyph" x="899" y="162"/>
+
+  <rect x="970" y="150" width="260" height="150" class="service"/>
+  <text x="990" y="177" class="stereotype">«component»</text>
+  <text x="990" y="202" class="component-title">Pipeline State</text>
+  <text x="990" y="230" class="component-text">Progress, status and errors</text>
+  <text x="990" y="252" class="component-text">Processed-item revision</text>
+  <text x="990" y="274" class="component-text">Live marker refresh signal</text>
+  <use href="#componentGlyph" x="1194" y="162"/>
+
+  <rect x="1265" y="150" width="290" height="150" class="gateway"/>
+  <text x="1285" y="177" class="stereotype">«component»</text>
+  <text x="1285" y="202" class="component-title">Client API Services</text>
+  <text x="1285" y="230" class="component-text">imageService.js</text>
+  <text x="1285" y="252" class="component-text">mapService.js</text>
+  <text x="1285" y="274" class="component-text">HTTP request/response adapter</text>
+  <use href="#componentGlyph" x="1519" y="162"/>
+
+  <rect x="1590" y="150" width="155" height="150" class="service"/>
+  <text x="1608" y="177" class="stereotype">«component»</text>
+  <text x="1608" y="202" class="component-title">MapLibre GL</text>
+  <text x="1608" y="230" class="component-text">Map renderer</text>
+  <text x="1608" y="252" class="component-text">Markers</text>
+  <text x="1608" y="274" class="component-text">Popups</text>
+  <use href="#componentGlyph" x="1709" y="162"/>
+
+  <path d="M315 215 L350 215" class="dependency"/>
+  <path d="M315 250 C460 340,1120 340,1265 250" class="dependency"/>
+  <path d="M635 215 C760 110,1160 110,1265 215" class="dependency"/>
+  <path d="M935 215 L970 215" class="dependency"/>
+  <path d="M935 255 C1050 335,1160 335,1265 255" class="dependency"/>
+  <path d="M1555 215 L1590 215" class="dependency"/>
+
+  <!-- Client API port/interface -->
+  <rect x="1398" y="381" width="18" height="18" class="port"/>
+  <path d="M1407 399 L1407 412" class="connector"/>
+  <path d="M1397 402 A10 10 0 0 1 1397 422" class="connector"/>
+  <text x="1135" y="405" class="interface-label">IZolitron REST API — required / provided assembly</text>
+
+  <!-- BACKEND -->
+  <rect x="20" y="430" width="1260" height="550" class="frame"/>
+  <text x="42" y="462" class="system-title">Backend / Server Subsystem</text>
+  <text x="1000" y="460" class="note">FastAPI modular monolith</text>
+
+  <rect x="55" y="510" width="230" height="145" class="gateway"/>
+  <text x="75" y="537" class="stereotype">«component»</text>
+  <text x="75" y="562" class="component-title">FastAPI Routers</text>
+  <text x="75" y="590" class="component-text">Images, classifications</text>
+  <text x="75" y="612" class="component-text">labels, stats, legacy map</text>
+  <text x="75" y="634" class="component-text">HTTP/error translation</text>
+  <use href="#componentGlyph" x="249" y="522"/>
+
+  <rect x="55" y="700" width="230" height="130" class="data"/>
+  <text x="75" y="727" class="stereotype">«component»</text>
+  <text x="75" y="752" class="component-title">Pydantic Schemas</text>
+  <text x="75" y="780" class="component-text">Request validation</text>
+  <text x="75" y="802" class="component-text">Stable response contracts</text>
+  <use href="#componentGlyph" x="249" y="712"/>
+
+  <rect x="335" y="510" width="250" height="145" class="service"/>
+  <text x="355" y="537" class="stereotype">«component»</text>
+  <text x="355" y="562" class="component-title">Mapillary Job Manager</text>
+  <text x="355" y="590" class="component-text">Background job lifecycle</text>
+  <text x="355" y="612" class="component-text">Progress and cancellation</text>
+  <text x="355" y="634" class="component-text">Incremental item publication</text>
+  <use href="#componentGlyph" x="549" y="522"/>
+
+  <rect x="335" y="700" width="250" height="150" class="service"/>
+  <text x="355" y="727" class="stereotype">«component»</text>
+  <text x="355" y="752" class="component-title">Image Processing Service</text>
+  <text x="355" y="780" class="component-text">Validate and deduplicate</text>
+  <text x="355" y="802" class="component-text">Store, classify and persist</text>
+  <text x="355" y="824" class="component-text">Shared upload/import pipeline</text>
+  <use href="#componentGlyph" x="549" y="712"/>
+
+  <rect x="635" y="510" width="220" height="145" class="service"/>
+  <text x="655" y="537" class="stereotype">«component»</text>
+  <text x="655" y="562" class="component-title">Mapillary Service</text>
+  <text x="655" y="590" class="component-text">German-city bounding box</text>
+  <text x="655" y="612" class="component-text">Image metadata and location</text>
+  <text x="655" y="634" class="component-text">Offset pagination</text>
+  <use href="#componentGlyph" x="819" y="522"/>
+
+  <rect x="635" y="700" width="220" height="150" class="service"/>
+  <text x="655" y="727" class="stereotype">«component»</text>
+  <text x="655" y="752" class="component-title">Detection Service</text>
+  <text x="655" y="780" class="component-text">inference-sdk adapter</text>
+  <text x="655" y="802" class="component-text">Retries and thresholds</text>
+  <text x="655" y="824" class="component-text">Roboflow result mapping</text>
+  <use href="#componentGlyph" x="819" y="712"/>
+
+  <rect x="905" y="510" width="320" height="150" class="data"/>
+  <text x="925" y="537" class="stereotype">«component»</text>
+  <text x="925" y="562" class="component-title">Catalog &amp; Processing Repositories</text>
+  <text x="925" y="590" class="component-text">SQLAlchemy queries and writes</text>
+  <text x="925" y="612" class="component-text">Images, classifications, labels</text>
+  <text x="925" y="634" class="component-text">Categories, runs and statistics</text>
+  <use href="#componentGlyph" x="1189" y="522"/>
+
+  <rect x="905" y="710" width="320" height="140" class="gateway"/>
+  <text x="925" y="737" class="stereotype">«component»</text>
+  <text x="925" y="762" class="component-title">Local Image Storage Gateway</text>
+  <text x="925" y="790" class="component-text">SHA-256 content paths</text>
+  <text x="925" y="812" class="component-text">uploads/ and mapillary/ namespaces</text>
+  <text x="925" y="834" class="component-text">absolute path / public URL contract</text>
+  <use href="#componentGlyph" x="1189" y="722"/>
+
+  <path d="M285 575 L335 575" class="dependency"/>
+  <path d="M170 655 L170 700" class="dependency"/>
+  <path d="M285 610 C310 610,310 775,335 775" class="dependency"/>
+  <path d="M585 575 L635 575" class="dependency"/>
+  <path d="M585 775 L635 775" class="dependency"/>
+  <path d="M585 810 C710 900,820 900,905 790" class="dependency"/>
+  <path d="M585 800 C720 680,820 580,905 580" class="dependency"/>
+
+  <!-- Backend REST port/provided interface -->
+  <rect x="622" y="421" width="18" height="18" class="port"/>
+  <path d="M631 421 L631 412" class="connector"/>
+  <circle cx="631" cy="412" r="10" class="provided"/>
+  <path d="M641 412 L1397 412" class="connector"/>
+
+  <!-- EXTERNAL -->
+  <rect x="1310" y="430" width="470" height="550" class="frame"/>
+  <text x="1332" y="462" class="system-title">External Services</text>
+
+  <rect x="1345" y="510" width="190" height="125" class="external-box"/>
+  <text x="1365" y="537" class="stereotype">«component»</text>
+  <text x="1365" y="562" class="component-title">Nominatim / OSM</text>
+  <text x="1365" y="590" class="component-text">German city geocoding</text>
+  <text x="1365" y="612" class="component-text">Bounding box provider</text>
+  <use href="#componentGlyph" x="1499" y="522"/>
+
+  <rect x="1560" y="510" width="190" height="125" class="external-box"/>
+  <text x="1580" y="537" class="stereotype">«component»</text>
+  <text x="1580" y="562" class="component-title">Mapillary Graph API</text>
+  <text x="1580" y="590" class="component-text">Street images</text>
+  <text x="1580" y="612" class="component-text">GeoJSON coordinates</text>
+  <use href="#componentGlyph" x="1714" y="522"/>
+
+  <rect x="1345" y="700" width="190" height="125" class="external-box"/>
+  <text x="1365" y="727" class="stereotype">«component»</text>
+  <text x="1365" y="752" class="component-title">Roboflow Workflow</text>
+  <text x="1365" y="780" class="component-text">Garbage/litter inference</text>
+  <text x="1365" y="802" class="component-text">Boxes and confidence</text>
+  <use href="#componentGlyph" x="1499" y="712"/>
+
+  <rect x="1560" y="700" width="190" height="125" class="external-box"/>
+  <text x="1580" y="727" class="stereotype">«component»</text>
+  <text x="1580" y="752" class="component-title">MapTiler</text>
+  <text x="1580" y="780" class="component-text">Map styles and tiles</text>
+  <text x="1580" y="802" class="component-text">Client city search</text>
+  <use href="#componentGlyph" x="1714" y="712"/>
+
+  <!-- External ports and interfaces -->
+  <rect x="1271" y="565" width="18" height="18" class="port"/>
+  <circle cx="1300" cy="574" r="10" class="provided"/>
+  <path d="M1310 574 L1345 574" class="connector"/>
+  <text x="1138" y="695" class="interface-label">IGermanGeocoding</text>
+  <path d="M855 620 L880 680 L1260 680 L1260 574 L1271 574" class="external-connector"/>
+
+  <rect x="1271" y="755" width="18" height="18" class="port"/>
+  <circle cx="1300" cy="764" r="10" class="provided"/>
+  <path d="M1310 764 L1345 764" class="connector"/>
+  <text x="1170" y="746" class="interface-label">ITrashInference</text>
+  <path d="M855 775 L900 890 L1260 890 L1260 764 L1271 764" class="external-connector"/>
+
+  <rect x="1646" y="421" width="18" height="18" class="port"/>
+  <circle cx="1655" cy="450" r="10" class="provided"/>
+  <path d="M1655 460 L1655 510" class="connector"/>
+  <text x="1518" y="470" class="interface-label">IMapillaryImages</text>
+  <path d="M745 510 L745 480 L1655 480 L1655 460" class="external-connector"/>
+
+  <path d="M1665 300 C1665 370,1665 630,1665 700" class="external-connector"/>
+  <text x="1680" y="485" class="interface-label">IMapTiles</text>
+
+  <!-- STORAGE -->
+  <rect x="20" y="1020" width="1760" height="205" class="frame"/>
+  <text x="42" y="1052" class="system-title">Storage Subsystem</text>
+  <text x="1450" y="1050" class="note">Current MVP stores are solid; future adapter is dashed</text>
+
+  <rect x="155" y="1080" width="300" height="110" class="data"/>
+  <text x="175" y="1107" class="stereotype">«database»</text>
+  <text x="175" y="1132" class="component-title">SQLite — zolitron.db</text>
+  <text x="175" y="1160" class="component-text">Metadata, coordinates and relations</text>
+  <use href="#componentGlyph" x="419" y="1092"/>
+
+  <rect x="595" y="1080" width="330" height="110" class="data"/>
+  <text x="615" y="1107" class="stereotype">«storage»</text>
+  <text x="615" y="1132" class="component-title">Local File System</text>
+  <text x="615" y="1160" class="component-text">backend/app/static image binaries</text>
+  <use href="#componentGlyph" x="889" y="1092"/>
+
+  <rect x="1080" y="1080" width="360" height="110" class="future-box"/>
+  <text x="1100" y="1107" class="stereotype">«future component»</text>
+  <text x="1100" y="1132" class="component-title">PostgreSQL / Object Storage Adapters</text>
+  <text x="1100" y="1160" class="component-text">Replace infrastructure behind existing contracts</text>
+  <use href="#componentGlyph" x="1404" y="1092"/>
+
+  <!-- Storage interfaces -->
+  <rect x="1056" y="971" width="18" height="18" class="port"/>
+  <path d="M1065 989 L1065 1010" class="connector"/>
+  <circle cx="1065" cy="1010" r="10" class="provided"/>
+  <text x="1085" y="1015" class="interface-label">IImageStorage</text>
+  <path d="M1065 850 L1065 971" class="connector"/>
+  <path d="M1065 1020 C1065 1060,760 1060,760 1080" class="connector"/>
+
+  <rect x="1216" y="576" width="18" height="18" class="port"/>
+  <path d="M1234 585 L1250 585 L1250 945 C1250 1000,305 1000,305 1058" class="connector"/>
+  <circle cx="305" cy="1068" r="10" class="provided"/>
+  <text x="325" y="1072" class="interface-label">IMetadataRepository</text>
+
+  <!-- Legend -->
+  <rect x="1050" y="20" width="720" height="68" fill="#fff" stroke="#777"/>
+  <rect x="1070" y="38" width="75" height="28" class="presentation"/>
+  <text x="1155" y="57" class="note">Presentation / Data</text>
+  <rect x="1300" y="38" width="75" height="28" class="service"/>
+  <text x="1385" y="57" class="note">Service</text>
+  <rect x="1470" y="38" width="75" height="28" class="gateway"/>
+  <text x="1555" y="57" class="note">Gateway / Adapter</text>
+  <use href="#componentGlyph" x="1690" y="36"/>
+  <text x="1715" y="57" class="note">Component</text>
+</svg>
