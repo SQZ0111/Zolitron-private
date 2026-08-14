@@ -1,20 +1,19 @@
 <script setup>
-import { computed, onBeforeUnmount, ref, watch } from "vue"
+import { computed, onBeforeUnmount, ref } from "vue"
 
 import {
-  cancelMapillaryBatchJob,
-  getMapillaryBatchJob,
-  startMapillaryBatchJob,
+  cancelCameraFrameBatchJob,
+  getCameraFrameBatchJob,
+  startCameraFrameBatchJob,
 } from "../../services/imageService"
 import { imagePipelineState } from "../../services/imagePipelineState"
 
 const menuOpen = ref(false)
-const city = ref("Bochum")
 const batchSize = ref(5)
 const autoFetch = ref(false)
 const maxAutomaticBatches = ref(3)
 const automaticBatchesCompleted = ref(0)
-const paginationNext = ref(null)
+const cursor = ref(null)
 const currentJobId = ref(null)
 let pollTimer
 
@@ -33,17 +32,10 @@ const statusLabel = computed(() => {
   return labels[imagePipelineState.state.value] || "Ready"
 })
 
-const canFetchNext = computed(() => Boolean(paginationNext.value))
+const canFetchNext = computed(() => Boolean(cursor.value))
 const actionLabel = computed(() =>
   canFetchNext.value ? "Fetch next batch" : "Start fetching",
 )
-
-watch(city, () => {
-  if (!imagePipelineState.active.value) {
-    paginationNext.value = null
-    imagePipelineState.reset()
-  }
-})
 
 function schedulePoll(jobId) {
   pollTimer = window.setTimeout(() => pollJob(jobId), 700)
@@ -51,15 +43,15 @@ function schedulePoll(jobId) {
 
 async function pollJob(jobId) {
   try {
-    const status = await getMapillaryBatchJob(jobId)
+    const status = await getCameraFrameBatchJob(jobId)
     imagePipelineState.update(status)
 
     if (status.state === "ready") {
       currentJobId.value = null
-      paginationNext.value = status.paginationNext || null
+      cursor.value = status.cursor || null
       if (
         autoFetch.value &&
-        paginationNext.value &&
+        cursor.value &&
         automaticBatchesCompleted.value < maxAutomaticBatches.value
       ) {
         automaticBatchesCompleted.value += 1
@@ -68,9 +60,9 @@ async function pollJob(jobId) {
       }
 
       if (autoFetch.value) {
-        const reason = paginationNext.value
+        const reason = cursor.value
           ? `limit of ${maxAutomaticBatches.value} automatic batch(es) reached`
-          : "no more sites are available"
+          : "no more frames are available"
         imagePipelineState.update({
           state: "ready",
           progress: 100,
@@ -99,15 +91,6 @@ async function startFetch(isAutomatic = false) {
   if (imagePipelineState.active.value) {
     return
   }
-  if (!city.value.trim()) {
-    imagePipelineState.update({
-      state: "error",
-      progress: 0,
-      message: "City required",
-      error: "Please enter a city.",
-    })
-    return
-  }
 
   maxAutomaticBatches.value = Math.min(
     25,
@@ -127,12 +110,7 @@ async function startFetch(isAutomatic = false) {
   })
 
   try {
-    const result = await startMapillaryBatchJob(
-      city.value,
-      "Germany",
-      batchSize.value,
-      paginationNext.value,
-    )
+    const result = await startCameraFrameBatchJob(batchSize.value, cursor.value)
     currentJobId.value = result.jobId
     menuOpen.value = false
     schedulePoll(result.jobId)
@@ -160,7 +138,7 @@ async function stopFetching() {
   }
 
   try {
-    const status = await cancelMapillaryBatchJob(currentJobId.value)
+    const status = await cancelCameraFrameBatchJob(currentJobId.value)
     imagePipelineState.update(status)
     if (status.state === "stopping") {
       schedulePoll(currentJobId.value)
@@ -222,18 +200,9 @@ onBeforeUnmount(() => {
 
       <v-card class="fetch-menu" elevation="12">
         <v-card-title class="text-subtitle-1 font-weight-bold">
-          Fetch Mapillary sites
+          Fetch camera frames
         </v-card-title>
         <v-card-text>
-          <v-text-field
-            v-model="city"
-            label="German city"
-            prepend-inner-icon="mdi-map-marker-outline"
-            variant="outlined"
-            density="compact"
-            :disabled="imagePipelineState.active.value"
-          />
-
           <div class="d-flex justify-space-between text-body-2">
             <span>Images per batch</span>
             <strong>{{ batchSize }}</strong>

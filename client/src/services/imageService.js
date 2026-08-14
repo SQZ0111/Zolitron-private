@@ -36,50 +36,14 @@ export async function uploadImage(file, metadata) {
   return parseResponse(response, `Image upload failed: ${response.status}`)
 }
 
-export async function importMapillaryCity(city, country = "Germany", limit = 5) {
-  const response = await fetch(`${API_BASE_URL}/api/images/import/mapillary`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ city, country, limit }),
-  })
-  return parseResponse(response, `Mapillary import failed: ${response.status}`)
-}
-
-export async function importMapillaryBatch(
-  city,
-  country = "Germany",
-  limit = 5,
-  paginationNext = null,
-) {
-  const body = { city: city.trim(), country: country.trim(), limit }
-  if (paginationNext) {
-    body.paginationNext = paginationNext
+export async function startCameraFrameBatchJob(size = 5, cursor = null) {
+  const body = { size }
+  if (cursor) {
+    body.cursor = cursor
   }
 
   const response = await fetch(
-    `${API_BASE_URL}/api/images/import/mapillary/batch`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    },
-  )
-  return parseResponse(response, `Mapillary batch import failed: ${response.status}`)
-}
-
-export async function startMapillaryBatchJob(
-  city,
-  country = "Germany",
-  limit = 5,
-  paginationNext = null,
-) {
-  const body = { city: city.trim(), country: country.trim(), limit }
-  if (paginationNext) {
-    body.paginationNext = paginationNext
-  }
-
-  const response = await fetch(
-    `${API_BASE_URL}/api/images/import/mapillary/jobs`,
+    `${API_BASE_URL}/api/images/import/camera-frames/jobs`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -89,16 +53,16 @@ export async function startMapillaryBatchJob(
   return parseResponse(response, `Could not start image processing: ${response.status}`)
 }
 
-export async function getMapillaryBatchJob(jobId) {
+export async function getCameraFrameBatchJob(jobId) {
   const response = await fetch(
-    `${API_BASE_URL}/api/images/import/mapillary/jobs/${encodeURIComponent(jobId)}`,
+    `${API_BASE_URL}/api/images/import/camera-frames/jobs/${encodeURIComponent(jobId)}`,
   )
   return parseResponse(response, `Could not read image-processing status: ${response.status}`)
 }
 
-export async function cancelMapillaryBatchJob(jobId) {
+export async function cancelCameraFrameBatchJob(jobId) {
   const response = await fetch(
-    `${API_BASE_URL}/api/images/import/mapillary/jobs/${encodeURIComponent(jobId)}/cancel`,
+    `${API_BASE_URL}/api/images/import/camera-frames/jobs/${encodeURIComponent(jobId)}/cancel`,
     { method: "POST" },
   )
   return parseResponse(response, `Could not stop image processing: ${response.status}`)

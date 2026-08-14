@@ -1,68 +1,46 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 import {
-  cancelMapillaryBatchJob,
-  getMapillaryBatchJob,
-  importMapillaryBatch,
-  startMapillaryBatchJob,
+  cancelCameraFrameBatchJob,
+  getCameraFrameBatchJob,
+  startCameraFrameBatchJob,
 } from "../services/imageService"
 
-describe("importMapillaryBatch", () => {
+describe("startCameraFrameBatchJob", () => {
   afterEach(() => {
     vi.unstubAllGlobals()
   })
 
-  it("requests the first Mapillary batch with the selected size", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: vi.fn().mockResolvedValue({
-        items: [],
-        paginationNext: "offset:8",
-      }),
-    })
-    vi.stubGlobal("fetch", fetchMock)
-
-    await importMapillaryBatch(" Bochum ", "Germany", 8)
-
-    expect(fetchMock).toHaveBeenCalledWith(
-      "http://127.0.0.1:8000/api/images/import/mapillary/batch",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          city: "Bochum",
-          country: "Germany",
-          limit: 8,
-        }),
-      },
-    )
-  })
-
-  it("passes paginationNext when requesting the next batch", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: vi.fn().mockResolvedValue({ items: [], paginationNext: null }),
-    })
-    vi.stubGlobal("fetch", fetchMock)
-
-    await importMapillaryBatch("Bochum", "Germany", 5, "offset:5")
-
-    const request = fetchMock.mock.calls[0][1]
-    expect(JSON.parse(request.body).paginationNext).toBe("offset:5")
-  })
-
-  it("starts a trackable backend job", async () => {
+  it("starts a trackable backend job with the selected batch size", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: vi.fn().mockResolvedValue({ jobId: "job-1" }),
     })
     vi.stubGlobal("fetch", fetchMock)
 
-    await startMapillaryBatchJob("Bochum", "Germany", 5)
+    await startCameraFrameBatchJob(8)
 
-    expect(fetchMock.mock.calls[0][0]).toBe(
-      "http://127.0.0.1:8000/api/images/import/mapillary/jobs",
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://127.0.0.1:8000/api/images/import/camera-frames/jobs",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ size: 8 }),
+      },
     )
+  })
+
+  it("passes the cursor when requesting the next batch", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: vi.fn().mockResolvedValue({ jobId: "job-2" }),
+    })
+    vi.stubGlobal("fetch", fetchMock)
+
+    await startCameraFrameBatchJob(5, "cursor-abc")
+
+    const request = fetchMock.mock.calls[0][1]
+    expect(JSON.parse(request.body).cursor).toBe("cursor-abc")
   })
 
   it("reads a backend job status", async () => {
@@ -76,10 +54,10 @@ describe("importMapillaryBatch", () => {
     })
     vi.stubGlobal("fetch", fetchMock)
 
-    await getMapillaryBatchJob("job/1")
+    await getCameraFrameBatchJob("job/1")
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://127.0.0.1:8000/api/images/import/mapillary/jobs/job%2F1",
+      "http://127.0.0.1:8000/api/images/import/camera-frames/jobs/job%2F1",
     )
   })
 
@@ -94,10 +72,10 @@ describe("importMapillaryBatch", () => {
     })
     vi.stubGlobal("fetch", fetchMock)
 
-    await cancelMapillaryBatchJob("job-1")
+    await cancelCameraFrameBatchJob("job-1")
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://127.0.0.1:8000/api/images/import/mapillary/jobs/job-1/cancel",
+      "http://127.0.0.1:8000/api/images/import/camera-frames/jobs/job-1/cancel",
       { method: "POST" },
     )
   })

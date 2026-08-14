@@ -13,7 +13,6 @@ async function parseResponse(response, fallbackMessage) {
     const error = await response.json()
     message = error.detail || message
   } catch {
-
   }
   throw new Error(message)
 }
