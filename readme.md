@@ -55,12 +55,13 @@ ROBOFLOW_API_KEY=YOUR_PRIVATE_API_KEY
 ROBOFLOW_WORKSPACE=yoav1s-workspace
 ROBOFLOW_WORKFLOW_ID=trash-vtrash-t8mku-2-rfdetr-large-t1-logic-2
 ROBOFLOW_API_URL=https://serverless.roboflow.com
-MAPILLARY_ACCESS_TOKEN=YOUR_PRIVATE_MAPILLARY_TOKEN
+CAMERA_API_EMAIL=YOUR_ZOLITRON_ACCOUNT_EMAIL
+CAMERA_API_PASSWORD=YOUR_ZOLITRON_ACCOUNT_PASSWORD
 ```
 
-Never commit the API key. The workspace, workflow ID, and API URL have application defaults, but keeping them in the environment makes the model replaceable without changing backend code.
+Never commit the API key or the camera account credentials. The workspace, workflow ID, and API URLs have application defaults, but keeping them in the environment makes the model and camera source replaceable without changing backend code.
 
-`MAPILLARY_ACCESS_TOKEN` is used only by the backend to query georeferenced street images. It must not be exposed through a `VITE_` client variable.
+`CAMERA_API_EMAIL`/`CAMERA_API_PASSWORD` are used only by the backend to log in to the Zolitron camera account (`https://account-api.zolitron.com`) and fetch camera-frame recordings from `https://rm-api.zolitron.com`. They must not be exposed through a `VITE_` client variable. Optional overrides `CAMERA_API_ACCOUNT_URL` and `CAMERA_API_DATA_URL` are available if those endpoints ever move.
 
 ## Model Integration
 
@@ -267,25 +268,25 @@ Response shape:
 ```json
 [
   {
-    "id": 1,
-    "image_id": 1,
-    "label_id": 1,
-    "category_id": 1,
+    "id": 5,
+    "image_id": 5,
+    "label_id": 3,
+    "category_id": 2,
     "analysis_run_id": 1,
-    "label": "overgrown",
-    "category": "vegetation",
-    "confidence": 0.91,
-    "status": "classified",
-    "latitude": 51.4818,
-    "longitude": 7.2162,
-    "imgUrl": "/static/dummy-images/overgrown-1.jpg",
+    "label": "garbage",
+    "category": "waste",
+    "confidence": 0.57,
+    "status": "low-confidence",
+    "latitude": 51.4762,
+    "longitude": 7.2056,
+    "imgUrl": "/static/dummy-images/mixed-review-1.jpg",
     "city": "Bochum",
     "country": "Germany"
   }
 ]
 ```
 
-The map client fetches this endpoint when the page opens, after a city search, and after a Mapillary processing job reports newly processed images. Marker rendering is isolated in `client/src/components/Map/ClassificationMarkers.vue`; popups display the classification image, label, category, confidence, status, and location. The marker legend uses purple for garbage/dumping, green for vegetation, and gray for clean or review results.
+The map client fetches this endpoint with `label=garbage` when the page opens, after the city is changed through the legend dialog, and after a camera-frame processing job reports newly processed images. Bochum is the current MVP default and focus. The legend provides a **Reset view** button that returns the map to the selected city's center and default zoom without reloading classification data. It also provides a **Navigation** dropdown containing the same routes as the main navbar, using the shared link definition in `client/src/router/navigation.js`. The client renders accepted garbage/litter classifications with confidence greater than or equal to `0.60` (60%). Results marked `low-confidence`, vegetation records, and `not-garbage` records are not rendered. This threshold matches the model's lowest accepted class threshold for litter while avoiding weak candidates. Marker rendering is isolated in `client/src/components/Map/ClassificationMarkers.vue`, and popups display the classification image, label, category, confidence, status, and location.
 
 ### Images
 
@@ -296,31 +297,31 @@ GET /api/images/{image_id}
 
 Returns image metadata and image URLs. Use this when a frontend view needs image records without classification details.
 
-### Upload And Mapillary Import
+### Upload And Camera-Frame Import
 
 ```text
 POST /api/images/upload
-POST /api/images/import/mapillary
-POST /api/images/import/mapillary/batch
-POST /api/images/import/mapillary/jobs
-GET /api/images/import/mapillary/jobs/{job_id}
-POST /api/images/import/mapillary/jobs/{job_id}/cancel
+POST /api/images/import/camera-frames/jobs
+GET /api/images/import/camera-frames/jobs/{job_id}
+POST /api/images/import/camera-frames/jobs/{job_id}/cancel
 ```
 
 `POST /api/images/upload` accepts one multipart JPEG or PNG image plus `city`, `country`, and optional `latitude` and `longitude`. The responsive Vue upload page supports browsing or dragging multiple photos, sends them as individual requests, and shows persistent dismissible classification notifications.
-`POST /api/images/import/mapillary` accepts:
+
+`POST /api/images/import/camera-frames/jobs` starts a background batch import from the Zolitron camera fleet's dataset (`https://rm-api.zolitron.com/camera-frames/dataset`). It accepts:
 
 ```json
 {
-  "city": "Bochum",
-  "country": "Germany",
-  "limit": 5
+  "size": 5,
+  "cursor": null
 }
 ```
 
-The upload and standard Mapillary import endpoints store images locally below `backend/app/static/uploads` or `backend/app/static/mapillary`, classify them with the Roboflow workflow, persist image/classification metadata, and return the existing marker-friendly `ClassificationRead` shape.
+Unlike the previous Mapillary source, the camera-frame dataset is not scoped by city — it is a single, cursor-paginated stream ordered by the time each recording was added to the system, optionally narrowed with `createdFrom`/`createdTo`. Each imported frame is reverse-geocoded (via Nominatim) from its `lat`/`lon` to resolve a `city`/`country` before being classified, so the existing city-based map filtering keeps working unchanged.
 
-The navbar's **Fetch sites** menu starts a background batch through `POST /api/images/import/mapillary/jobs`. It allows 1–25 images per batch, supports a maximum number of automatic follow-up batches, and can be stopped cooperatively. The navbar polls `GET /api/images/import/mapillary/jobs/{job_id}` to display the backend's fetching, validating, processing, stopping, ready, and error states.
+The upload and camera-frame import paths store images locally below `backend/app/static/uploads` or `backend/app/static/camera-frames`, classify them with the Roboflow workflow, persist image/classification metadata, and return the existing marker-friendly `ClassificationRead` shape.
+
+The navbar's **Fetch sites** menu starts a background batch through `POST /api/images/import/camera-frames/jobs`. The fixed navbar remains visible on the map and contains the fetch configuration, progress bar, automatic batching controls, and STOP action. It allows 1–25 images per batch, supports a maximum number of automatic follow-up batches, and can be stopped cooperatively. The client polls `GET /api/images/import/camera-frames/jobs/{job_id}` to display the backend's fetching, validating, processing, stopping, ready, and error states. Each completed classification is published through the job status immediately, allowing the map to refresh its markers while the remaining batch is still processing.
 
 ### Labels And Categories
 
@@ -385,7 +386,7 @@ Example:
 GET /static/dummy-images/overgrown-1.jpg
 ```
 
-Seeded dummy database records reference the example JPG files under this path, so they can be used to verify marker popups locally. Images created by upload or Mapillary import are stored under `/static/uploads/` or `/static/mapillary/`.
+Seeded dummy database records reference the example JPG files under this path, so they can be used to verify marker popups locally. Images created by upload or camera-frame import are stored under `/static/uploads/` or `/static/camera-frames/`.
 
 ### API Errors
 
@@ -458,16 +459,22 @@ The current MVP is split into three layers: client, backend, and storage. The fl
 
 The flow is:
 
-1. A user opens the Vue client and can choose a German city and Mapillary batch size from the navbar.
-2. The Fetch sites menu delegates Mapillary job requests to the frontend image service.
+1. A user opens the Vue client in Bochum and can open the map legend's city dialog or choose a camera-frame batch size from the navbar.
+2. The Fetch sites menu delegates camera-frame job requests to the frontend image service.
 3. The FastAPI router receives the request and keeps endpoint logic thin.
 4. Backend services handle business rules such as validation, import, deduplication, classification, and review state changes.
 5. Repositories isolate SQLite access.
 6. Storage utilities handle image files on disk so routers do not access file storage directly.
 7. The backend returns detection data to the client.
-8. The navbar reports Mapillary processing progress while the map fetches stored classifications and renders color-coded markers with image popups.
+8. The navbar reports camera-frame processing progress while the map fetches stored classifications and renders color-coded markers with image popups.
 
 ## Architecture Notes
+
+The current layered component diagram is available in
+[`architecture-zolitron.drawio.png`](architecture-zolitron.drawio.png), with
+its editable SVG source under `doc-imgs`. The detailed design rationale and
+component documentation are maintained in
+[`docs/final-report.md`](docs/final-report.md).
 
 ### Client
 
@@ -554,4 +561,8 @@ or:
 ```bash
 npm run install:all:linux
 ```
+
+### Camera-frame import is slow or fails with a geocoding error
+
+Each imported frame is reverse-geocoded through the free Nominatim API, which enforces a rate limit of about 1 request per second and can reject or slow down requests during large or frequent batches. Keep batch sizes reasonable (the UI caps at 25) and avoid running automatic batches back-to-back without a pause. If imports regularly hit this limit, consider adding a local coordinate cache or switching to a paid geocoding provider.
 

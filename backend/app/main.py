@@ -117,34 +117,18 @@ def read_root():
             },
             {
                 "method": "POST",
-                "path": "/api/images/import/mapillary",
-                "description": "Fetch, store, and classify a limited Mapillary sample for a German city.",
-                "body_example": {"city": "Bochum", "country": "Germany", "limit": 5},
-            },
-            {
-                "method": "POST",
-                "path": "/api/images/import/mapillary/batch",
-                "description": "Process an offset-paginated Mapillary batch for the map controls.",
-                "body_example": {
-                    "city": "Bochum",
-                    "country": "Germany",
-                    "limit": 5,
-                    "paginationNext": None,
-                },
-            },
-            {
-                "method": "POST",
-                "path": "/api/images/import/mapillary/jobs",
-                "description": "Start a trackable Mapillary processing job.",
+                "path": "/api/images/import/camera-frames/jobs",
+                "description": "Start a trackable Zolitron camera-frame processing job.",
+                "body_example": {"size": 5, "cursor": None},
             },
             {
                 "method": "GET",
-                "path": "/api/images/import/mapillary/jobs/{job_id}",
+                "path": "/api/images/import/camera-frames/jobs/{job_id}",
                 "description": "Read fetching, validation, classification, and completion progress.",
             },
             {
                 "method": "POST",
-                "path": "/api/images/import/mapillary/jobs/{job_id}/cancel",
+                "path": "/api/images/import/camera-frames/jobs/{job_id}/cancel",
                 "description": "Request cooperative cancellation of a running batch.",
             },
             {

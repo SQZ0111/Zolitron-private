@@ -1,8 +1,8 @@
-from app.services.mapillary_jobs import MapillaryBatchJobManager
+from app.services.camera_frame_jobs import CameraFrameBatchJobManager
 
 
 def test_batch_job_can_be_marked_for_cancellation():
-    manager = MapillaryBatchJobManager()
+    manager = CameraFrameBatchJobManager()
     job = manager.create()
 
     cancelled = manager.cancel(job.job_id)
