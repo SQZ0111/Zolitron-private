@@ -7,7 +7,9 @@
 
 .v-application {
   font-family: 'Roboto', sans-serif;
-  background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+  background:
+    radial-gradient(circle at 50% -10%, rgba(255, 255, 255, 0.55), transparent 55%),
+    linear-gradient(135deg, #dceafd 0%, #aed2f7 45%, #6fa4ea 100%);
 }
 
 .v-main {
@@ -16,6 +18,7 @@
   align-items: center;
   justify-content: center;
   min-height: calc(100vh - 64px);
+  padding-top: 64px;
 }
 
 .v-container {
@@ -44,27 +47,75 @@
 }
 
 .v-app-bar {
-  background: linear-gradient(90deg, #0D47A1 0%, #1565C0 30%, #1976D2 70%, #1E88E5 100%) !important;
+  background: linear-gradient(90deg, #0a1e3f 0%, #14315c 50%, #0a1e3f 100%) !important;
+  border-bottom: 1px solid rgba(66, 165, 245, 0.4);
+  box-shadow: 0 2px 24px rgba(66, 165, 245, 0.25) !important;
 }
 
 .v-tab {
   text-transform: none;
   letter-spacing: 0.5px;
-  color: #E3F2FD !important;
+  color: #90b4d6 !important;
   transition: all 0.3s ease;
 }
 
 .v-tab:hover {
-  color: #FFA726 !important;
-  background: rgba(255, 255, 255, 0.08);
+  color: #eaf6ff !important;
+  background: rgba(66, 165, 245, 0.12);
 }
 
 .v-tab--active {
-  color: #FFFFFF !important;
-  border-bottom: 2px solid #FFA726 !important;
+  color: #eaf6ff !important;
+  border-bottom: 2px solid #42a5f5 !important;
+  text-shadow: 0 0 10px rgba(66, 165, 245, 0.8);
 }
 
 .v-btn--primary {
   background: linear-gradient(90deg, #1976D2, #42A5F5);
   border: none;
+}
+
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&display=swap");
+
+.cyber-panel {
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(66, 165, 245, 0.28), transparent 45%),
+    radial-gradient(circle at 100% 20%, rgba(30, 136, 229, 0.24), transparent 40%),
+    linear-gradient(160deg, #0a1e3f 0%, #14315c 55%, #0a1e3f 100%);
+  box-shadow:
+    0 0 0 1px rgba(66, 165, 245, 0.25),
+    0 0 40px rgba(66, 165, 245, 0.15),
+    0 20px 60px rgba(0, 0, 0, 0.55);
+}
+
+.cyber-title {
+  font-family: "Orbitron", "Roboto", sans-serif;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #eaf6ff;
+  text-shadow:
+    0 0 8px rgba(66, 165, 245, 0.9),
+    0 0 24px rgba(66, 165, 245, 0.5),
+    0 0 48px rgba(30, 136, 229, 0.4);
+}
+
+.cyber-subtitle {
+  color: #90b4d6;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.74rem;
+}
+
+.cyber-button.v-btn {
+  background: linear-gradient(160deg, rgba(20, 49, 92, 0.9), rgba(10, 30, 63, 0.9));
+  border: 1px solid rgba(255, 61, 154, 0.35);
+  box-shadow: 0 0 16px rgba(255, 61, 154, 0.2);
+  color: #eaf6ff;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.cyber-button.v-btn:hover {
+  box-shadow: 0 0 28px rgba(255, 61, 154, 0.4);
+  transform: translateY(-2px);
 }

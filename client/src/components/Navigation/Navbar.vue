@@ -16,7 +16,7 @@ const navigationOpen = ref(false)
     height="64"
     elevation="4"
   >
-    <v-toolbar-title class="brand-title">Zolitron2</v-toolbar-title>
+    <v-toolbar-title class="cyber-title brand-title">Zolitron2</v-toolbar-title>
     <ImagePipelineControl />
     <v-spacer></v-spacer>
     <v-tabs class="d-none d-md-flex" centered>

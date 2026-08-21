@@ -131,8 +131,13 @@ onBeforeUnmount(() => {
 }
 
 .map {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 20px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(66, 165, 245, 0.35),
+    0 20px 50px rgba(10, 30, 60, 0.35);
 }
 
 .marker-loading {
@@ -157,6 +162,11 @@ onBeforeUnmount(() => {
 @media (max-width: 600px) {
   .map-page {
     min-height: 440px;
+  }
+
+  .map {
+    inset: 10px;
+    border-radius: 14px;
   }
 
   .marker-loading {

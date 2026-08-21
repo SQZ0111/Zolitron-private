@@ -121,13 +121,17 @@ async function handleUpload() {
       @dismiss="dismissNotification"
     />
 
-    <v-card class="upload-card" elevation="10">
+    <v-card
+      class="upload-card cyber-panel"
+      theme="blueSkyNight"
+      elevation="10"
+    >
       <header class="upload-header">
         <v-avatar color="primary" size="52">
           <v-icon icon="mdi-camera-plus-outline" size="28" />
         </v-avatar>
         <div>
-          <h1 class="text-h5 font-weight-bold">Upload street photos</h1>
+          <h1 class="cyber-title text-h5">Upload street photos</h1>
           <p class="text-body-2 text-medium-emphasis mt-1">
             Add location details and submit JPEG or PNG photos for classification.
           </p>
@@ -256,13 +260,14 @@ async function handleUpload() {
         </section>
 
         <v-btn
-          color="primary"
+          variant="flat"
           size="large"
           block
+          rounded="lg"
           prepend-icon="mdi-cloud-upload-outline"
           :loading="uploading"
           :disabled="uploading"
-          class="submit-button"
+          class="submit-button cyber-button"
           @click="handleUpload"
         >
           Upload and classify

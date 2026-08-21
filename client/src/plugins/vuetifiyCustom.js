@@ -29,6 +29,20 @@ const blueSkyTheme = {
         blue900: '#0D47A1',
         blue950: '#0A3D91'
       }
+    },
+    blueSkyNight: {
+      dark: true,
+      colors: {
+        primary: '#42A5F5',
+        secondary: '#1E88E5',
+        accent: '#FFA726',
+        background: '#0A1E3F',
+        surface: '#14315C',
+        error: '#EF5350',
+        info: '#29B6F6',
+        success: '#66BB6A',
+        warning: '#FFCA28'
+      }
     }
   }
 }
