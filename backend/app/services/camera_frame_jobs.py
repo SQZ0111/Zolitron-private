@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass, field
 from threading import Lock
 from uuid import uuid4
@@ -9,6 +10,8 @@ from app.schemas.api import ClassificationRead
 from app.schemas.image_processing import CameraFrameBatchImportRequest
 from app.services.camera_api import CameraApiService
 from app.services.image_processing import ImageProcessingService
+#error handle logger 
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -178,6 +181,7 @@ class CameraFrameBatchJobManager:
                 cursor=next_cursor,
             )
         except Exception:
+            logger.exception("Camera-frame batch job %s failed", job_id)
             self.update(
                 job_id,
                 state="error",
