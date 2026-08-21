@@ -4,7 +4,7 @@
       <v-col cols="12">
         <h1 class="text-h4 font-weight-bold mb-1">Zolitron</h1>
         <p class="text-body-2 text-medium-emphasis mb-6">
-          Live detection overview across all imported and uploaded images.
+          Detection Overview
         </p>
       </v-col>
     </v-row>
