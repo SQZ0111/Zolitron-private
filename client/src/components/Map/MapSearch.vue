@@ -60,8 +60,8 @@ async function submitSearch() {
     :persistent="searching"
     @update:model-value="emit('update:modelValue', $event)"
   >
-    <v-card class="city-dialog">
-      <v-card-title>Change city</v-card-title>
+    <v-card class="city-dialog cyber-panel" theme="blueSkyNight">
+      <v-card-title class="cyber-title">Change city</v-card-title>
       <v-card-subtitle>
         Bochum is the current focus of the MVP.
       </v-card-subtitle>
@@ -81,8 +81,16 @@ async function submitSearch() {
 
         <v-card-actions>
           <v-spacer />
-          <v-btn :disabled="searching" @click="closeDialog">Cancel</v-btn>
-          <v-btn color="primary" type="submit" :loading="searching">
+          <v-btn variant="text" :disabled="searching" @click="closeDialog">
+            Cancel
+          </v-btn>
+          <v-btn
+            variant="flat"
+            rounded="lg"
+            type="submit"
+            class="cyber-button"
+            :loading="searching"
+          >
             Show city
           </v-btn>
         </v-card-actions>

@@ -20,19 +20,26 @@
     <template v-else>
       <v-row>
         <v-col cols="12" sm="4">
-          <div class="home-card stat-card stat-card--sky">
+          <div
+            class="cyber-card stat-card stat-card--sky stat-card--clickable"
+            role="button"
+            tabindex="0"
+            aria-haspopup="dialog"
+            @click="galleryOpen = true"
+            @keydown.enter="galleryOpen = true"
+          >
             <div class="stat-value">{{ stats.image_count }}</div>
             <div class="stat-label">Images processed</div>
           </div>
         </v-col>
         <v-col cols="12" sm="4">
-          <div class="home-card stat-card stat-card--navy">
+          <div class="cyber-card stat-card stat-card--navy">
             <div class="stat-value">{{ stats.classification_count }}</div>
             <div class="stat-label">Classifications</div>
           </div>
         </v-col>
         <v-col cols="12" sm="4">
-          <div class="home-card stat-card stat-card--deep">
+          <div class="cyber-card stat-card stat-card--deep">
             <div class="stat-value">{{ stats.category_count }}</div>
             <div class="stat-label">Categories tracked</div>
           </div>
@@ -41,9 +48,9 @@
 
       <v-row>
         <v-col cols="12">
-          <div class="home-card breakdown-panel">
-            <div class="breakdown-header">
-              <span class="breakdown-title">{{ activeBreakdown.title }}</span>
+          <div class="cyber-card breakdown-panel">
+            <div class="panel-header">
+              <span class="panel-title">{{ activeBreakdown.title }}</span>
               <div class="breakdown-nav">
                 <button
                   type="button"
@@ -72,7 +79,7 @@
                 :key="slide.key"
                 :value="index"
               >
-                <div v-if="!slide.entries.length" class="breakdown-empty">
+                <div v-if="!slide.entries.length" class="panel-empty">
                   No classifications yet.
                 </div>
                 <div
@@ -80,7 +87,7 @@
                   :key="entry.name"
                   class="breakdown-row"
                 >
-                  <div class="breakdown-row-header">
+                  <div class="panel-meta-row">
                     <span class="breakdown-name">{{ entry.name }}</span>
                     <span class="breakdown-count">{{ entry.count }}</span>
                   </div>
@@ -111,7 +118,7 @@
 
       <v-row>
         <v-col cols="12" sm="6">
-          <router-link to="/map" class="home-card quick-action">
+          <router-link to="/map" class="cyber-card quick-action">
             <span class="quick-action-icon">&#9737;</span>
             <div>
               <div class="quick-action-title">Open the map</div>
@@ -122,7 +129,7 @@
         <v-col cols="12" sm="6">
           <router-link
             to="/uploads"
-            class="home-card quick-action"
+            class="cyber-card quick-action"
           >
             <span class="quick-action-icon">&#8593;</span>
             <div>
@@ -133,18 +140,22 @@
         </v-col>
       </v-row>
     </template>
+
+    <ImageGallery v-model="galleryOpen" />
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted, ref } from "vue"
 
+import ImageGallery from "../components/Home/ImageGallery.vue"
 import { fetchStats } from "../services/statsService"
 
 const stats = ref(null)
 const loading = ref(true)
 const error = ref("")
 const activeSlide = ref(0)
+const galleryOpen = ref(false)
 
 function toBreakdown(counts, total) {
   return Object.entries(counts || {})
@@ -221,21 +232,12 @@ onMounted(async () => {
   margin: 0;
 }
 
-.home-card {
-  position: relative;
-  border-radius: 14px;
-  background: linear-gradient(160deg, rgba(20, 49, 92, 0.9), rgba(10, 30, 63, 0.9));
-  border: 1px solid rgba(66, 165, 245, 0.25);
-  padding: 14px 18px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-}
-
-.home-card:hover {
-  transform: translateY(-4px);
-}
-
 .stat-card {
   text-align: center;
+}
+
+.stat-card--clickable {
+  cursor: pointer;
 }
 
 .stat-card--sky {
@@ -294,50 +296,9 @@ onMounted(async () => {
   border-color: rgba(66, 165, 245, 0.2);
 }
 
-.breakdown-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.breakdown-title {
-  font-family: "Orbitron", "Roboto", sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  color: #eaf6ff;
-}
-
 .breakdown-nav {
   display: flex;
   gap: 8px;
-}
-
-.cyber-arrow {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  border: 1px solid rgba(66, 165, 245, 0.35);
-  background: rgba(66, 165, 245, 0.08);
-  color: #42a5f5;
-  cursor: pointer;
-  font-size: 0.7rem;
-  line-height: 1;
-}
-
-.cyber-arrow:hover:not(:disabled) {
-  background: rgba(66, 165, 245, 0.2);
-  box-shadow: 0 0 12px rgba(66, 165, 245, 0.5);
-}
-
-.cyber-arrow:disabled {
-  opacity: 0.3;
-  cursor: default;
-}
-
-.breakdown-empty {
-  color: #90b4d6;
-  font-size: 0.9rem;
 }
 
 .breakdown-row {
@@ -346,15 +307,6 @@ onMounted(async () => {
 
 .breakdown-row:last-child {
   margin-bottom: 0;
-}
-
-.breakdown-row-header {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.88rem;
-  color: #eaf6ff;
-  margin-bottom: 6px;
-  text-transform: capitalize;
 }
 
 .breakdown-track {
@@ -422,11 +374,5 @@ onMounted(async () => {
 .quick-action-subtitle {
   color: #90b4d6;
   font-size: 0.82rem;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .home-card {
-    transition: none;
-  }
 }
 </style>

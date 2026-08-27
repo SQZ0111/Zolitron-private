@@ -86,7 +86,7 @@ function renderMarkers() {
 watch(
   () => [props.map, props.classifications],
   renderMarkers,
-  { immediate: true, deep: true },
+  { immediate: true },
 )
 
 onBeforeUnmount(clearMarkers)

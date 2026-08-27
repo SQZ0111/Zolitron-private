@@ -16,6 +16,16 @@ async function parseResponse(response, fallbackMessage) {
   throw new Error(message)
 }
 
+export async function listImages() {
+  const response = await fetch(`${API_BASE_URL}/api/images`)
+  return parseResponse(response, `Could not load images: ${response.status}`)
+}
+
+export async function listClassifications() {
+  const response = await fetch(`${API_BASE_URL}/api/classifications`)
+  return parseResponse(response, `Could not load classifications: ${response.status}`)
+}
+
 export async function uploadImage(file, metadata) {
   const body = new FormData()
   body.append("file", file)

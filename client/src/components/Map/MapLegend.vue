@@ -8,20 +8,60 @@ defineProps({
     type: String,
     default: "Bochum",
   },
+  availableCities: {
+    type: Array,
+    default: () => [],
+  },
 })
 
-defineEmits(["change-city", "reset-view"])
+defineEmits(["change-city", "reset-view", "select-city"])
 
 const navigationOpen = ref(false)
+const citiesOpen = ref(false)
 </script>
 
 <template>
-  <aside class="map-legend" aria-label="Map marker legend">
-    <h2 class="legend-title">Legend</h2>
+  <v-sheet
+    tag="aside"
+    theme="blueSkyNight"
+    class="map-legend cyber-card"
+    aria-label="Map marker legend"
+  >
+    <h2 class="panel-title legend-title">Legend</h2>
     <div class="legend-item">
       <span class="legend-color" />
       <span>Trash/litter at least 60%</span>
     </div>
+    <v-menu
+      v-if="availableCities.length"
+      v-model="citiesOpen"
+      location="top end"
+      :close-on-content-click="true"
+    >
+      <template #activator="{ props }">
+        <v-btn
+          v-bind="props"
+          class="change-city"
+          color="primary"
+          variant="tonal"
+          size="small"
+          block
+          prepend-icon="mdi-map-marker-multiple-outline"
+        >
+          {{ currentCity }} - Cities with data
+        </v-btn>
+      </template>
+
+      <v-list nav aria-label="Cities with imported data">
+        <v-list-item
+          v-for="city in availableCities"
+          :key="city.name"
+          :title="city.name"
+          :subtitle="`${city.count} classification(s)`"
+          @click="$emit('select-city', city)"
+        />
+      </v-list>
+    </v-menu>
     <v-btn
       class="change-city"
       color="primary"
@@ -71,7 +111,7 @@ const navigationOpen = ref(false)
         />
       </v-list>
     </v-menu>
-  </aside>
+  </v-sheet>
 </template>
 
 <style scoped>
@@ -81,10 +121,6 @@ const navigationOpen = ref(false)
   bottom: 28px;
   z-index: 3;
   min-width: 190px;
-  padding: 14px 16px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 3px 14px rgba(13, 71, 161, 0.2);
   font-size: 0.82rem;
   backdrop-filter: blur(8px);
 }
@@ -99,6 +135,7 @@ const navigationOpen = ref(false)
   align-items: center;
   gap: 9px;
   margin-top: 6px;
+  color: #eaf6ff;
 }
 
 .legend-color {

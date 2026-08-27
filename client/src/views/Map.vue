@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeUnmount, onMounted, ref, watch } from "vue"
+import { onBeforeUnmount, onMounted, ref, shallowRef, watch } from "vue"
 import { Map } from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 
@@ -7,6 +7,7 @@ import ClassificationMarkers from "../components/Map/ClassificationMarkers.vue"
 import MapLegend from "../components/Map/MapLegend.vue"
 import MapSearch from "../components/Map/MapSearch.vue"
 import { imagePipelineState } from "../services/imagePipelineState"
+import { listClassifications } from "../services/imageService"
 import { fetchClassificationMarkers } from "../services/mapService"
 
 const INITIAL_LOCATION = {
@@ -17,13 +18,14 @@ const INITIAL_LOCATION = {
 }
 
 const mapContainer = ref(null)
-const map = ref(null)
+const map = shallowRef(null)
 const classifications = ref([])
 const currentCity = ref(INITIAL_LOCATION.city)
 const selectedLocation = ref(INITIAL_LOCATION)
 const cityDialogOpen = ref(false)
 const loadingMarkers = ref(false)
 const markerError = ref("")
+const availableCities = ref([])
 
 async function loadMarkers(city) {
   loadingMarkers.value = true
@@ -39,6 +41,39 @@ async function loadMarkers(city) {
   }
 }
 
+async function loadAvailableCities() {
+  let items
+  try {
+    items = await listClassifications()
+  } catch {
+    return
+  }
+
+  const grouped = {}
+  for (const item of items) {
+    if (!item.city || item.latitude == null || item.longitude == null) {
+      continue
+    }
+    const key = item.city.toLowerCase()
+    if (!grouped[key]) {
+      grouped[key] = { name: item.city, latSum: 0, lonSum: 0, count: 0 }
+    }
+    const entry = grouped[key]
+    entry.latSum += item.latitude
+    entry.lonSum += item.longitude
+    entry.count += 1
+  }
+
+  availableCities.value = Object.values(grouped)
+    .map((entry) => ({
+      name: entry.name,
+      latitude: entry.latSum / entry.count,
+      longitude: entry.lonSum / entry.count,
+      count: entry.count,
+    }))
+    .sort((a, b) => b.count - a.count)
+}
+
 function handleLocationFound(location) {
   selectedLocation.value = location
   map.value?.flyTo({
@@ -46,6 +81,19 @@ function handleLocationFound(location) {
     zoom: 13,
   })
   loadMarkers(location.city)
+}
+
+function selectCity(city) {
+  selectedLocation.value = {
+    city: city.name,
+    longitude: city.longitude,
+    latitude: city.latitude,
+  }
+  map.value?.flyTo({
+    center: [city.longitude, city.latitude],
+    zoom: 13,
+  })
+  loadMarkers(city.name)
 }
 
 function resetMapView() {
@@ -67,12 +115,14 @@ onMounted(() => {
     zoom: INITIAL_LOCATION.zoom,
   })
   loadMarkers(INITIAL_LOCATION.city)
+  loadAvailableCities()
 })
 
 watch(imagePipelineState.processedCount, () => {
   if (currentCity.value) {
     loadMarkers(currentCity.value)
   }
+  loadAvailableCities()
 })
 
 onBeforeUnmount(() => {
@@ -92,8 +142,10 @@ onBeforeUnmount(() => {
     />
     <MapLegend
       :current-city="currentCity"
+      :available-cities="availableCities"
       @change-city="cityDialogOpen = true"
       @reset-view="resetMapView"
+      @select-city="selectCity"
     />
     <ClassificationMarkers
       :map="map"
