@@ -54,6 +54,12 @@ class ClassificationRead(BaseModel):
     img_url: str = Field(serialization_alias="imgUrl")
     city: str
     country: str
+    bbox_x: float | None = None
+    bbox_y: float | None = None
+    bbox_width: float | None = None
+    bbox_height: float | None = None
+    image_width: int | None = None
+    image_height: int | None = None
 
 
 class AnalysisRunRead(BaseModel):
