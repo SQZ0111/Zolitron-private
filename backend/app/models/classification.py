@@ -16,6 +16,10 @@ class Classification(Base):
     analysis_run_id = Column(Integer, ForeignKey("analysis_runs.id"), nullable=False)
     confidence = Column(Float, nullable=False)
     status = Column(String(30), nullable=False, default="classified")
+    bbox_x = Column(Float, nullable=True)
+    bbox_y = Column(Float, nullable=True)
+    bbox_width = Column(Float, nullable=True)
+    bbox_height = Column(Float, nullable=True)
     created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
 
     image = relationship("Image", back_populates="classifications")

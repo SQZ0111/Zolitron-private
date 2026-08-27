@@ -50,6 +50,11 @@ class ImageProcessingService:
             raise ImageValidationError("Only JPEG and PNG images are supported.")
         return extensions[image_format]
 
+    @staticmethod
+    def read_image_dimensions(content: bytes) -> tuple[int, int]:
+        with PillowImage.open(io.BytesIO(content)) as image:
+            return image.size
+
     def store_and_classify(
         self,
         *,
@@ -63,6 +68,7 @@ class ImageProcessingService:
     ) -> ClassificationRead:
         city = self.validate_city(city)
         extension = self.validate_image(content)
+        width, height = self.read_image_dimensions(content)
         stored = self.storage.save(content, extension, namespace)
 
         existing = self.repository.get_classification_by_storage_path(
@@ -81,6 +87,8 @@ class ImageProcessingService:
                 country=country,
                 latitude=latitude,
                 longitude=longitude,
+                width=width,
+                height=height,
             )
         else:
             image = self.repository.create_image(
@@ -91,19 +99,22 @@ class ImageProcessingService:
                 country=country,
                 latitude=latitude,
                 longitude=longitude,
+                width=width,
+                height=height,
             )
         self.db.commit()
 
         try:
             detector = self.detector or DetectionService()
             output = detector.detect_trash(stored.absolute_path)
-            label, confidence, status = self._summarize_output(output)
+            label, confidence, status, bbox = self._summarize_output(output)
             classification = self.repository.create_classification(
                 image=image,
                 label_name=label,
                 confidence=confidence,
                 status=status,
                 model_version=detector.workflow_id,
+                bbox=bbox,
             )
         except Exception:
             self.repository.mark_failed(image)
@@ -112,7 +123,7 @@ class ImageProcessingService:
         return CatalogService(self.db).classification_to_schema(classification)
 
     @staticmethod
-    def _summarize_output(output: dict) -> tuple[str, float, str]:
+    def _summarize_output(output: dict) -> tuple[str, float, str, dict | None]:
         detections = output.get("predictions", {}).get("predictions", [])
         supported = [
             detection
@@ -126,16 +137,18 @@ class ImageProcessingService:
             >= CONFIDENCE_THRESHOLDS[detection["class"]]
         ]
 
+        def to_bbox(detection: dict) -> dict:
+            return {
+                "x": detection.get("x"),
+                "y": detection.get("y"),
+                "width": detection.get("width"),
+                "height": detection.get("height"),
+            }
+
         if accepted:
-            return (
-                "garbage",
-                max(float(item.get("confidence", 0)) for item in accepted),
-                "classified",
-            )
+            top = max(accepted, key=lambda item: float(item.get("confidence", 0)))
+            return "garbage", float(top.get("confidence", 0)), "classified", to_bbox(top)
         if supported:
-            return (
-                "garbage",
-                max(float(item.get("confidence", 0)) for item in supported),
-                "low-confidence",
-            )
-        return "not-garbage", 0.0, "classified"
+            top = max(supported, key=lambda item: float(item.get("confidence", 0)))
+            return "garbage", float(top.get("confidence", 0)), "low-confidence", to_bbox(top)
+        return "not-garbage", 0.0, "classified", None

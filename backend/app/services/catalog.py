@@ -48,4 +48,10 @@ class CatalogService:
             img_url=item.image.img_url,
             city=item.image.city,
             country=item.image.country,
+            bbox_x=item.bbox_x,
+            bbox_y=item.bbox_y,
+            bbox_width=item.bbox_width,
+            bbox_height=item.bbox_height,
+            image_width=item.image.width,
+            image_height=item.image.height,
         )

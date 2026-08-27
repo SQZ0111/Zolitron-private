@@ -38,6 +38,8 @@ class ImageProcessingRepository:
         country: str,
         latitude: float | None,
         longitude: float | None,
+        width: int | None = None,
+        height: int | None = None,
     ) -> Image:
         image = Image(
             source=source,
@@ -47,6 +49,8 @@ class ImageProcessingRepository:
             country=country,
             latitude=latitude,
             longitude=longitude,
+            width=width,
+            height=height,
             status="pending",
         )
         self.db.add(image)
@@ -63,6 +67,8 @@ class ImageProcessingRepository:
         country: str,
         latitude: float | None,
         longitude: float | None,
+        width: int | None = None,
+        height: int | None = None,
     ) -> Image:
         image.source = source
         image.img_url = img_url
@@ -70,6 +76,8 @@ class ImageProcessingRepository:
         image.country = country
         image.latitude = latitude
         image.longitude = longitude
+        image.width = width
+        image.height = height
         image.status = "pending"
         self.db.flush()
         return image
@@ -103,10 +111,12 @@ class ImageProcessingRepository:
         confidence: float,
         status: str,
         model_version: str,
+        bbox: dict | None = None,
     ) -> Classification:
         label = self.db.query(Label).filter(Label.name == label_name).one()
         category = self.db.query(Category).filter(Category.id == label.category_id).one()
         run = self.get_or_create_analysis_run(model_version)
+        bbox = bbox or {}
 
         classification = Classification(
             image_id=image.id,
@@ -115,6 +125,10 @@ class ImageProcessingRepository:
             analysis_run_id=run.id,
             confidence=confidence,
             status=status,
+            bbox_x=bbox.get("x"),
+            bbox_y=bbox.get("y"),
+            bbox_width=bbox.get("width"),
+            bbox_height=bbox.get("height"),
         )
         image.status = status
         self.db.add(classification)

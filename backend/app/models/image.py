@@ -17,6 +17,8 @@ class Image(Base):
     country = Column(String(120), nullable=False, default="Germany")
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
+    width = Column(Integer, nullable=True)
+    height = Column(Integer, nullable=True)
     status = Column(String(30), nullable=False, default="classified")
     created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
 
