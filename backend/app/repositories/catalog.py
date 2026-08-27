@@ -113,7 +113,12 @@ class CatalogRepository:
         self.db.commit()
 
     def list_images(self) -> list[Image]:
-        return self.db.query(Image).order_by(Image.id).all()
+        return (
+            self.db.query(Image)
+            .filter(Image.source != "dummy")
+            .order_by(Image.id)
+            .all()
+        )
 
     def get_image(self, image_id: int) -> Image | None:
         return self.db.query(Image).filter(Image.id == image_id).first()
@@ -142,6 +147,7 @@ class CatalogRepository:
             )
             .join(Classification.image)
             .join(Classification.label)
+            .filter(Image.source != "dummy")
         )
 
         if city:
@@ -155,19 +161,28 @@ class CatalogRepository:
         by_label = dict(
             self.db.query(Label.name, func.count(Classification.id))
             .join(Classification, Classification.label_id == Label.id)
+            .join(Image, Classification.image_id == Image.id)
+            .filter(Image.source != "dummy")
             .group_by(Label.name)
             .all()
         )
         by_category = dict(
             self.db.query(Category.name, func.count(Classification.id))
             .join(Classification, Classification.category_id == Category.id)
+            .join(Image, Classification.image_id == Image.id)
+            .filter(Image.source != "dummy")
             .group_by(Category.name)
             .all()
         )
 
         return {
-            "image_count": self.db.query(Image).count(),
-            "classification_count": self.db.query(Classification).count(),
+            "image_count": self.db.query(Image).filter(Image.source != "dummy").count(),
+            "classification_count": (
+                self.db.query(Classification)
+                .join(Image, Classification.image_id == Image.id)
+                .filter(Image.source != "dummy")
+                .count()
+            ),
             "category_count": self.db.query(Category).count(),
             "label_count": self.db.query(Label).count(),
             "analysis_run_count": self.db.query(AnalysisRun).count(),
