@@ -232,6 +232,22 @@ Expected backend result for the current suite:
 
 The backend tests may create a local `backend/zolitron.db` SQLite file. This file is ignored by Git and should not be committed.
 
+## Resetting Local Data
+
+To wipe all images, classifications, and analysis runs, plus the stored files under `backend/app/static/uploads`, `camera-frames`, and the legacy `mapillary` folder, run from `backend/` with the virtual environment active:
+
+```bash
+./venv/Scripts/python.exe -m app.scripts.reset_db
+```
+
+Add `--reseed` to repopulate the dummy demo data afterward, or `--yes` to skip the confirmation prompt (useful for scripts):
+
+```bash
+./venv/Scripts/python.exe -m app.scripts.reset_db --reseed --yes
+```
+
+Categories and labels are left untouched since they are fixed taxonomy, not test data. This is a local CLI tool only.
+
 ## Frontend API Interfaces
 
 Use the backend base URL from the client environment variable when adding frontend service functions:
