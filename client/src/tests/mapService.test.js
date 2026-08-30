@@ -1,9 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 import {
+  coveragePercent,
   fetchClassificationMarkers,
   isTrashClassification,
   isVisibleTrashMarker,
+  markerDisposition,
   resolveBackendImageUrl,
 } from "../services/mapService"
 
@@ -12,7 +14,7 @@ describe("mapService", () => {
     vi.unstubAllGlobals()
   })
 
-  it("loads classifications filtered by city", async () => {
+  it("loads garbage and litter classifications filtered by city only", async () => {
     const response = [
       {
         id: 1,
@@ -20,6 +22,7 @@ describe("mapService", () => {
         label: "garbage",
         confidence: 0.72,
         status: "classified",
+        disposition: "collect",
       },
       {
         id: 2,
@@ -35,6 +38,14 @@ describe("mapService", () => {
         confidence: 0.95,
         status: "classified",
       },
+      {
+        id: 4,
+        city: "Bochum",
+        label: "litter",
+        confidence: 0.68,
+        status: "classified",
+        disposition: "watch",
+      },
     ]
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
@@ -45,9 +56,9 @@ describe("mapService", () => {
     const result = await fetchClassificationMarkers("Bochum")
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://127.0.0.1:8000/api/classifications?city=Bochum&label=garbage",
+      "http://127.0.0.1:8000/api/classifications?city=Bochum",
     )
-    expect(result).toEqual([response[0]])
+    expect(result).toEqual([response[0], response[3]])
   })
 
   it("accepts only garbage and litter classifications as markers", () => {
@@ -93,6 +104,26 @@ describe("mapService", () => {
         status: "classified",
       }),
     ).toBe(false)
+  })
+
+  it("reads the stored disposition and falls back for older rows", () => {
+    expect(markerDisposition({ label: "litter", disposition: "collect" })).toBe(
+      "collect",
+    )
+    expect(markerDisposition({ label: "garbage", disposition: "watch" })).toBe(
+      "watch",
+    )
+    expect(markerDisposition({ label: "litter" })).toBe("watch")
+    expect(markerDisposition({ label: "garbage" })).toBe("collect")
+  })
+
+  it("reports total frame coverage as a percentage", () => {
+    expect(
+      coveragePercent({ garbage_coverage: 0.1, litter_coverage: 0.05 }),
+    ).toBe(15)
+    expect(coveragePercent({ litter_coverage: 0.124 })).toBe(12)
+    expect(coveragePercent({})).toBe(0)
+    expect(coveragePercent(null)).toBe(0)
   })
 
   it("resolves relative backend image URLs", () => {

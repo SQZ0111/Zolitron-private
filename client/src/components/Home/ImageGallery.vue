@@ -2,7 +2,17 @@
 import { ref, watch } from "vue"
 
 import { listClassifications } from "../../services/imageService"
-import { resolveBackendImageUrl } from "../../services/mapService"
+import {
+  coveragePercent,
+  isVisibleTrashMarker,
+  markerDisposition,
+  resolveBackendImageUrl,
+} from "../../services/mapService"
+
+const DISPOSITION_LABELS = {
+  collect: "Collect",
+  watch: "Watch",
+}
 
 const RECENT_LIMIT = 10
 
@@ -24,26 +34,32 @@ function close() {
   emit("update:modelValue", false)
 }
 
-function isGarbage(item) {
-  return item.label === "garbage"
+function itemDisposition(item) {
+  if (item?.disposition) {
+    return item.disposition
+  }
+  // Rows stored before dispositions existed: infer one for accepted trash only.
+  return isVisibleTrashMarker(item) ? markerDisposition(item) : null
 }
 
-function hasBoundingBox(item) {
+function dispositionBadge(item) {
+  return DISPOSITION_LABELS[itemDisposition(item)] || ""
+}
+
+function hasBox(box) {
   return (
-    item.bbox_x != null &&
-    item.bbox_y != null &&
-    item.bbox_width != null &&
-    item.bbox_height != null &&
-    item.image_width &&
-    item.image_height
+    box.bbox_x != null &&
+    box.bbox_y != null &&
+    box.bbox_width != null &&
+    box.bbox_height != null
   )
 }
 
-function boundingBoxStyle(item) {
-  const left = ((item.bbox_x - item.bbox_width / 2) / item.image_width) * 100
-  const top = ((item.bbox_y - item.bbox_height / 2) / item.image_height) * 100
-  const width = (item.bbox_width / item.image_width) * 100
-  const height = (item.bbox_height / item.image_height) * 100
+function boundingBoxStyle(box, item) {
+  const left = ((box.bbox_x - box.bbox_width / 2) / item.image_width) * 100
+  const top = ((box.bbox_y - box.bbox_height / 2) / item.image_height) * 100
+  const width = (box.bbox_width / item.image_width) * 100
+  const height = (box.bbox_height / item.image_height) * 100
 
   return {
     left: `${left}%`,
@@ -51,6 +67,22 @@ function boundingBoxStyle(item) {
     width: `${width}%`,
     height: `${height}%`,
   }
+}
+
+function detectionBoxes(item) {
+  if (!item?.image_width || !item?.image_height) {
+    return []
+  }
+
+  const detections = (item.detections || []).filter(hasBox)
+  // Older rows kept only the single top box on the classification itself.
+  const boxes = detections.length ? detections : hasBox(item) ? [item] : []
+
+  return boxes.map((box, index) => ({
+    key: `${item.id}-${index}`,
+    className: box.class_name || item.label,
+    style: boundingBoxStyle(box, item),
+  }))
 }
 
 watch(
@@ -129,14 +161,20 @@ watch(
             class="gallery-detail-image"
           />
           <div
-            v-if="hasBoundingBox(selectedItem)"
+            v-for="box in detectionBoxes(selectedItem)"
+            :key="box.key"
             class="gallery-bbox"
-            :style="boundingBoxStyle(selectedItem)"
+            :class="`gallery-bbox--${box.className}`"
+            :style="box.style"
           />
         </div>
         <div class="panel-meta-row">
           <span>{{ selectedItem.city }}, {{ selectedItem.country }}</span>
           <span>{{ selectedItem.label }} &middot; {{ selectedItem.status }}</span>
+          <span v-if="itemDisposition(selectedItem)">
+            {{ itemDisposition(selectedItem) }} &middot;
+            {{ coveragePercent(selectedItem) }}% coverage
+          </span>
         </div>
       </div>
 
@@ -146,7 +184,9 @@ watch(
           :key="item.id"
           type="button"
           class="gallery-thumb"
-          :class="{ 'gallery-thumb--garbage': isGarbage(item) }"
+          :class="
+            itemDisposition(item) ? `gallery-thumb--${itemDisposition(item)}` : ''
+          "
           @click="selectedItem = item"
         >
           <img
@@ -154,6 +194,13 @@ watch(
             :alt="`${item.city} image`"
             loading="lazy"
           />
+          <span
+            v-if="dispositionBadge(item)"
+            class="gallery-thumb-badge"
+            :class="`gallery-thumb-badge--${itemDisposition(item)}`"
+          >
+            {{ dispositionBadge(item) }}
+          </span>
           <span class="gallery-thumb-caption">{{ item.city }}</span>
         </button>
       </div>
@@ -174,6 +221,7 @@ watch(
 }
 
 .gallery-thumb {
+  position: relative;
   display: flex;
   flex-direction: column;
   border: 1px solid rgba(66, 165, 245, 0.25);
@@ -189,30 +237,29 @@ watch(
   box-shadow: 0 0 16px rgba(66, 165, 245, 0.4);
 }
 
-@property --gallery-garbage-angle {
+@property --gallery-collect-angle {
   syntax: "<angle>";
   initial-value: 0deg;
   inherits: false;
 }
 
-.gallery-thumb--garbage {
-  position: relative;
+.gallery-thumb--collect {
   border-color: rgba(255, 61, 154, 0.55);
   box-shadow: 0 0 18px rgba(255, 61, 154, 0.65), inset 0 0 10px rgba(255, 61, 154, 0.15);
 }
 
-.gallery-thumb--garbage:hover {
+.gallery-thumb--collect:hover {
   box-shadow: 0 0 26px rgba(255, 61, 154, 0.85), inset 0 0 12px rgba(255, 61, 154, 0.2);
 }
 
-.gallery-thumb--garbage::before {
+.gallery-thumb--collect::before {
   content: "";
   position: absolute;
   inset: -2px;
   border-radius: inherit;
   padding: 3px;
   background: conic-gradient(
-    from var(--gallery-garbage-angle),
+    from var(--gallery-collect-angle),
     #ff3d9a 0%,
     #ffe0f2 10%,
     #ff3d9a 20%,
@@ -227,20 +274,52 @@ watch(
     linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-  animation: gallery-garbage-spin 3s linear infinite;
+  animation: gallery-collect-spin 3s linear infinite;
   pointer-events: none;
 }
 
-@keyframes gallery-garbage-spin {
+@keyframes gallery-collect-spin {
   to {
-    --gallery-garbage-angle: 360deg;
+    --gallery-collect-angle: 360deg;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .gallery-thumb--garbage::before {
+  .gallery-thumb--collect::before {
     animation: none;
   }
+}
+
+.gallery-thumb--watch {
+  border-color: rgba(249, 168, 37, 0.55);
+  box-shadow: 0 0 14px rgba(249, 168, 37, 0.45), inset 0 0 8px rgba(249, 168, 37, 0.12);
+}
+
+.gallery-thumb--watch:hover {
+  box-shadow: 0 0 20px rgba(249, 168, 37, 0.65), inset 0 0 10px rgba(249, 168, 37, 0.18);
+}
+
+.gallery-thumb-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 1;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.gallery-thumb-badge--collect {
+  background: #d32f2f;
+  color: #fff;
+}
+
+.gallery-thumb-badge--watch {
+  background: #f9a825;
+  color: #241a00;
 }
 
 .gallery-thumb img {
@@ -281,6 +360,11 @@ watch(
   box-shadow: 0 0 12px rgba(255, 61, 154, 0.7);
   border-radius: 2px;
   pointer-events: none;
+}
+
+.gallery-bbox--litter {
+  border-color: #f9a825;
+  box-shadow: 0 0 12px rgba(249, 168, 37, 0.7);
 }
 
 .gallery-back {

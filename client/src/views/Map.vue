@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeUnmount, onMounted, ref, shallowRef, watch } from "vue"
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from "vue"
 import { Map } from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 
@@ -8,7 +8,10 @@ import MapLegend from "../components/Map/MapLegend.vue"
 import MapSearch from "../components/Map/MapSearch.vue"
 import { imagePipelineState } from "../services/imagePipelineState"
 import { listClassifications } from "../services/imageService"
-import { fetchClassificationMarkers } from "../services/mapService"
+import {
+  fetchClassificationMarkers,
+  markerDisposition,
+} from "../services/mapService"
 
 const INITIAL_LOCATION = {
   city: "Bochum",
@@ -26,6 +29,16 @@ const cityDialogOpen = ref(false)
 const loadingMarkers = ref(false)
 const markerError = ref("")
 const availableCities = ref([])
+const showLitter = ref(true)
+
+const visibleClassifications = computed(() => {
+  if (showLitter.value) {
+    return classifications.value
+  }
+  return classifications.value.filter(
+    (item) => markerDisposition(item) !== "watch",
+  )
+})
 
 async function loadMarkers(city) {
   loadingMarkers.value = true
@@ -141,6 +154,7 @@ onBeforeUnmount(() => {
       @location-found="handleLocationFound"
     />
     <MapLegend
+      v-model:show-litter="showLitter"
       :current-city="currentCity"
       :available-cities="availableCities"
       @change-city="cityDialogOpen = true"
@@ -149,7 +163,7 @@ onBeforeUnmount(() => {
     />
     <ClassificationMarkers
       :map="map"
-      :classifications="classifications"
+      :classifications="visibleClassifications"
     />
 
     <v-progress-circular

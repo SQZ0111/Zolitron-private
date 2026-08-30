@@ -12,9 +12,13 @@ defineProps({
     type: Array,
     default: () => [],
   },
+  showLitter: {
+    type: Boolean,
+    default: true,
+  },
 })
 
-defineEmits(["change-city", "reset-view", "select-city"])
+defineEmits(["change-city", "reset-view", "select-city", "update:showLitter"])
 
 const navigationOpen = ref(false)
 const citiesOpen = ref(false)
@@ -29,9 +33,22 @@ const citiesOpen = ref(false)
   >
     <h2 class="panel-title legend-title">Legend</h2>
     <div class="legend-item">
-      <span class="legend-color" />
-      <span>Trash/litter at least 60%</span>
+      <span class="legend-color legend-color--collect" />
+      <span>Garbage &mdash; collection recommended</span>
     </div>
+    <div class="legend-item">
+      <span class="legend-color legend-color--watch" />
+      <span>Litter &mdash; monitoring</span>
+    </div>
+    <v-switch
+      class="legend-toggle"
+      :model-value="showLitter"
+      color="warning"
+      density="compact"
+      hide-details
+      label="Show litter (monitoring)"
+      @update:model-value="$emit('update:showLitter', Boolean($event))"
+    />
     <v-menu
       v-if="availableCities.length"
       v-model="citiesOpen"
@@ -139,11 +156,25 @@ const citiesOpen = ref(false)
 }
 
 .legend-color {
+  box-sizing: border-box;
   width: 14px;
   height: 14px;
   flex: 0 0 auto;
   border-radius: 50%;
-  background: #990066;
+}
+
+.legend-color--collect {
+  background: #d32f2f;
+}
+
+.legend-color--watch {
+  background: transparent;
+  border: 2px solid #f9a825;
+}
+
+.legend-toggle {
+  margin-top: 4px;
+  font-size: 0.78rem;
 }
 
 .change-city {

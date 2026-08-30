@@ -22,7 +22,6 @@ export async function fetchClassificationMarkers(city) {
   if (city?.trim()) {
     query.set("city", city.trim())
   }
-  query.set("label", "garbage")
 
   const response = await fetch(
     `${API_BASE_URL}/api/classifications?${query.toString()}`,
@@ -48,6 +47,19 @@ export function isVisibleTrashMarker(classification) {
     confidence >= MIN_TRASH_MARKER_CONFIDENCE &&
     classification.status !== "low-confidence"
   )
+}
+
+export function markerDisposition(classification) {
+  return (
+    classification?.disposition ||
+    (classification?.label === "litter" ? "watch" : "collect")
+  )
+}
+
+export function coveragePercent(classification) {
+  const garbage = Number(classification?.garbage_coverage) || 0
+  const litter = Number(classification?.litter_coverage) || 0
+  return Math.round((garbage + litter) * 100)
 }
 
 export async function searchGermanLocation(query) {
