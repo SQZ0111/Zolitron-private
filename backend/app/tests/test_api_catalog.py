@@ -116,6 +116,26 @@ def test_stats_endpoint_excludes_dummy_data(client, real_classification):
     assert data["image_count"] >= 1
     assert data["classification_count"] >= 1
     assert data["classifications_by_label"]["garbage"] >= 1
+    assert data["classifications_by_category"]["waste"] >= 1
+
+
+def test_stats_breaks_classifications_down_by_disposition_and_city(client, real_classification):
+    response = client.get("/api/stats")
+
+    assert response.status_code == 200
+    data = response.json()
+
+    by_disposition = data["classifications_by_disposition"]
+    by_city = data["classifications_by_city"]
+
+    assert set(by_disposition) <= {"collect", "watch", "not-garbage", "low-confidence"}
+    # The fixture row stores no disposition, so it lands in the low-confidence bucket.
+    assert by_disposition["low-confidence"] >= 1
+    assert sum(by_disposition.values()) == data["classification_count"]
+
+    assert by_city["Bochum"] >= 1
+    # Dummy rows are Bochum too, so a matching total proves they are excluded.
+    assert sum(by_city.values()) == data["classification_count"]
 
 
 def test_missing_image_uses_safe_error_schema(client):

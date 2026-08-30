@@ -16,6 +16,13 @@ describe("statsService", () => {
       analysis_run_count: 1,
       classifications_by_label: { garbage: 7, "not-garbage": 3 },
       classifications_by_category: { waste: 10 },
+      classifications_by_disposition: {
+        collect: 4,
+        watch: 3,
+        "not-garbage": 2,
+        "low-confidence": 1,
+      },
+      classifications_by_city: { Bochum: 8, Essen: 2 },
     }
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,

@@ -96,3 +96,5 @@ class StatsRead(BaseModel):
     analysis_run_count: int
     classifications_by_label: dict[str, int]
     classifications_by_category: dict[str, int]
+    classifications_by_disposition: dict[str, int]
+    classifications_by_city: dict[str, int]

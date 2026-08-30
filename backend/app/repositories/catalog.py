@@ -177,6 +177,28 @@ class CatalogRepository:
             .all()
         )
 
+        # Rows without a stored disposition are the low-confidence ones: either
+        # classified before dispositions existed or below the acting threshold.
+        by_disposition: dict[str, int] = {}
+        disposition_rows = (
+            self.db.query(Classification.disposition, func.count(Classification.id))
+            .join(Image, Classification.image_id == Image.id)
+            .filter(Image.source != "dummy")
+            .group_by(Classification.disposition)
+            .all()
+        )
+        for disposition, count in disposition_rows:
+            key = disposition or "low-confidence"
+            by_disposition[key] = by_disposition.get(key, 0) + count
+
+        by_city = dict(
+            self.db.query(Image.city, func.count(Classification.id))
+            .join(Classification, Classification.image_id == Image.id)
+            .filter(Image.source != "dummy")
+            .group_by(Image.city)
+            .all()
+        )
+
         return {
             "image_count": self.db.query(Image).filter(Image.source != "dummy").count(),
             "classification_count": (
@@ -190,6 +212,8 @@ class CatalogRepository:
             "analysis_run_count": self.db.query(AnalysisRun).count(),
             "classifications_by_label": by_label,
             "classifications_by_category": by_category,
+            "classifications_by_disposition": by_disposition,
+            "classifications_by_city": by_city,
         }
 
 
