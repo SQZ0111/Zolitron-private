@@ -177,6 +177,11 @@ const citiesOpen = ref(false)
   font-size: 0.78rem;
 }
 
+/* Match the 9px gap the legend items use between marker and text. */
+.legend-toggle :deep(.v-label) {
+  margin-left: 9px;
+}
+
 .change-city {
   margin-top: 12px;
 }

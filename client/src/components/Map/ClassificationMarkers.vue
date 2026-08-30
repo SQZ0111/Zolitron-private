@@ -3,6 +3,7 @@ import { onBeforeUnmount, watch } from "vue"
 import { Marker, Popup } from "maplibre-gl"
 
 import {
+  coverageLabel,
   coveragePercent,
   isVisibleTrashMarker,
   markerDisposition,
@@ -14,8 +15,11 @@ const DISPOSITION_COLORS = {
   watch: "#f9a825",
 }
 
+// Coverage is measured against the ground region, not the whole frame, so the
+// values are far smaller than a frame share: a modest pile is a couple of
+// percent and the cap is reached around 27 percent of the ground area.
 const COLLECT_BASE_SIZE = 14
-const COLLECT_COVERAGE_SIZE = 40
+const COLLECT_COVERAGE_SIZE = 75
 const COLLECT_MAX_SIZE = 34
 const WATCH_SIZE = 10
 
@@ -89,7 +93,7 @@ function createMarkerElement(disposition, coverage) {
   return element
 }
 
-function createPopupContent(classification, disposition, coverage) {
+function createPopupContent(classification, disposition, coverageText) {
   const content = document.createElement("article")
   content.className = "zolitron-marker-popup"
 
@@ -126,8 +130,8 @@ function createPopupContent(classification, disposition, coverage) {
   recommendation.className = `zolitron-marker-recommendation zolitron-marker-recommendation--${disposition}`
   recommendation.textContent =
     disposition === "watch"
-      ? `Monitor only — below dispatch threshold · ${coverage}% coverage`
-      : `Truck dispatch recommended · ${coverage}% frame coverage · ${detectionCount(classification)} detection(s)`
+      ? `Monitor only — ${detectionCount(classification)} small item(s) · ${coverageText} of ground area`
+      : `Truck dispatch recommended · ${coverageText} of ground area · ${detectionCount(classification)} detection(s)`
   content.appendChild(recommendation)
 
   const confidence = Number(classification.confidence || 0)
@@ -163,9 +167,10 @@ function renderMarkers() {
       continue
     }
     const coverage = coveragePercent(classification)
+    const coverageText = coverageLabel(classification)
 
     const popup = new Popup({ offset: 25, maxWidth: "290px" }).setDOMContent(
-      createPopupContent(classification, disposition, coverage),
+      createPopupContent(classification, disposition, coverageText),
     )
     renderedMarkers.push(
       new Marker({ element: createMarkerElement(disposition, coverage) })

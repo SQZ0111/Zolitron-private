@@ -3,7 +3,7 @@ import { ref, watch } from "vue"
 
 import { listClassifications } from "../../services/imageService"
 import {
-  coveragePercent,
+  coverageLabel,
   isVisibleTrashMarker,
   markerDisposition,
   resolveBackendImageUrl,
@@ -173,7 +173,7 @@ watch(
           <span>{{ selectedItem.label }} &middot; {{ selectedItem.status }}</span>
           <span v-if="itemDisposition(selectedItem)">
             {{ itemDisposition(selectedItem) }} &middot;
-            {{ coveragePercent(selectedItem) }}% coverage
+            {{ coverageLabel(selectedItem) }} of ground area
           </span>
         </div>
       </div>

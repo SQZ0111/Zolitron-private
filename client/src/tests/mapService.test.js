@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 import {
+  coverageLabel,
   coveragePercent,
   fetchClassificationMarkers,
   isTrashClassification,
@@ -117,13 +118,25 @@ describe("mapService", () => {
     expect(markerDisposition({ label: "garbage" })).toBe("collect")
   })
 
-  it("reports total frame coverage as a percentage", () => {
+  it("reports total ground coverage as an unrounded percentage number", () => {
     expect(
       coveragePercent({ garbage_coverage: 0.1, litter_coverage: 0.05 }),
-    ).toBe(15)
-    expect(coveragePercent({ litter_coverage: 0.124 })).toBe(12)
+    ).toBeCloseTo(15)
+    expect(coveragePercent({ litter_coverage: 0.007 })).toBeCloseTo(0.7)
     expect(coveragePercent({})).toBe(0)
     expect(coveragePercent(null)).toBe(0)
+  })
+
+  it("labels small coverage with a decimal instead of zero percent", () => {
+    expect(coverageLabel({ garbage_coverage: 0.07 })).toBe("7%")
+    expect(
+      coverageLabel({ garbage_coverage: 0.02, litter_coverage: 0.005 }),
+    ).toBe("3%")
+    expect(coverageLabel({ garbage_coverage: 0.003 })).toBe("0.3%")
+    expect(coverageLabel({ litter_coverage: 0.0001 })).toBe("0.1%")
+    expect(coverageLabel({ garbage_coverage: 0, litter_coverage: 0 })).toBe("0%")
+    expect(coverageLabel({})).toBe("0%")
+    expect(coverageLabel(null)).toBe("0%")
   })
 
   it("resolves relative backend image URLs", () => {

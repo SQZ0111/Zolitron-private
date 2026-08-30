@@ -56,10 +56,25 @@ export function markerDisposition(classification) {
   )
 }
 
+// Total ground-region coverage as an unrounded percentage number, for marker
+// sizing and other math. Use coverageLabel for anything a reviewer reads.
 export function coveragePercent(classification) {
   const garbage = Number(classification?.garbage_coverage) || 0
   const litter = Number(classification?.litter_coverage) || 0
-  return Math.round((garbage + litter) * 100)
+  return (garbage + litter) * 100
+}
+
+// Display string for total ground-region coverage. Small real detections must
+// never read as "0%", so anything above zero keeps one decimal below 1 percent.
+export function coverageLabel(classification) {
+  const percent = coveragePercent(classification)
+  if (!(percent > 0)) {
+    return "0%"
+  }
+  if (percent < 1) {
+    return `${Math.max(0.1, Math.round(percent * 10) / 10).toFixed(1)}%`
+  }
+  return `${Math.round(percent)}%`
 }
 
 export async function searchGermanLocation(query) {
