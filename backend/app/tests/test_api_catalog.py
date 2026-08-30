@@ -14,6 +14,7 @@ def test_normalized_tables_exist_in_metadata():
         "labels",
         "categories",
         "analysis_runs",
+        "detections",
     }
 
     assert expected_tables.issubset(set(Base.metadata.tables.keys()))
@@ -99,8 +100,11 @@ def test_labels_and_categories_endpoints_return_json(client):
 
     assert labels_response.status_code == 200
     assert categories_response.status_code == 200
-    assert len(labels_response.json()) >= 4
+    assert len(labels_response.json()) >= 5
     assert len(categories_response.json()) >= 2
+
+    label_names = {item["name"] for item in labels_response.json()}
+    assert {"garbage", "litter", "not-garbage"}.issubset(label_names)
 
 
 def test_stats_endpoint_excludes_dummy_data(client, real_classification):
