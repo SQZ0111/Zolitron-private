@@ -37,6 +37,17 @@ class ImageRead(BaseModel):
     status: str
 
 
+class DetectionRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    class_name: str
+    confidence: float
+    bbox_x: float | None = None
+    bbox_y: float | None = None
+    bbox_width: float | None = None
+    bbox_height: float | None = None
+
+
 class ClassificationRead(BaseModel):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
@@ -60,6 +71,12 @@ class ClassificationRead(BaseModel):
     bbox_height: float | None = None
     image_width: int | None = None
     image_height: int | None = None
+    disposition: str | None = None
+    garbage_coverage: float | None = None
+    litter_coverage: float | None = None
+    garbage_count: int | None = None
+    litter_count: int | None = None
+    detections: list[DetectionRead] = Field(default_factory=list)
 
 
 class AnalysisRunRead(BaseModel):

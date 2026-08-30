@@ -25,7 +25,7 @@ Base = declarative_base()
 
 
 def init_db():
-    from app.models import analysis_run, category, classification, image, label  
+    from app.models import analysis_run, category, classification, detection, image, label
 
     Base.metadata.create_all(bind=engine)
 

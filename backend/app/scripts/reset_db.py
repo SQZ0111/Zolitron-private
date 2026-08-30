@@ -9,6 +9,7 @@ load_dotenv()
 from app.db import SessionLocal, init_db
 from app.models.analysis_run import AnalysisRun
 from app.models.classification import Classification
+from app.models.detection import Detection
 from app.models.image import Image
 from app.services.catalog import CatalogService
 
@@ -28,6 +29,8 @@ def reset(reseed: bool) -> None:
     init_db()
     db = SessionLocal()
     try:
+        # Bulk deletes skip the ORM cascade, so child rows go first.
+        db.query(Detection).delete()
         db.query(Classification).delete()
         db.query(Image).delete()
         db.query(AnalysisRun).delete()

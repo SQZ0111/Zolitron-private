@@ -29,7 +29,9 @@ services:
         value: trash-vtrash-t8mku-2-rfdetr-large-t1-logic-2
       - key: ROBOFLOW_API_URL
         value: https://serverless.roboflow.com
-      - key: MAPILLARY_ACCESS_TOKEN
+      - key: CAMERA_API_EMAIL
+        sync: false
+      - key: CAMERA_API_PASSWORD
         sync: false
 
   - type: static

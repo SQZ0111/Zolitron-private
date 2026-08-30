@@ -134,7 +134,7 @@ def read_root():
             {
                 "method": "GET",
                 "path": "/api/classifications",
-                "description": "List marker-ready classification objects with label, category, confidence, coordinates, city, country, and imgUrl.",
+                "description": "List marker-ready classification objects with label, category, confidence, disposition, coverage, accepted detections, coordinates, city, country, and imgUrl.",
                 "query_parameters": ["city", "label"],
                 "examples": [
                     "/api/classifications?city=Bochum",

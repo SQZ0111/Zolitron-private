@@ -20,9 +20,19 @@ class Classification(Base):
     bbox_y = Column(Float, nullable=True)
     bbox_width = Column(Float, nullable=True)
     bbox_height = Column(Float, nullable=True)
+    disposition = Column(String(20), nullable=True)
+    garbage_coverage = Column(Float, nullable=True)
+    litter_coverage = Column(Float, nullable=True)
+    garbage_count = Column(Integer, nullable=True)
+    litter_count = Column(Integer, nullable=True)
     created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
 
     image = relationship("Image", back_populates="classifications")
     label = relationship("Label", back_populates="classifications")
     category = relationship("Category", back_populates="classifications")
     analysis_run = relationship("AnalysisRun", back_populates="classifications")
+    detections = relationship(
+        "Detection",
+        back_populates="classification",
+        cascade="all, delete-orphan",
+    )

@@ -1,7 +1,7 @@
 ﻿from sqlalchemy.orm import Session
 
 from app.repositories.catalog import CatalogRepository
-from app.schemas.api import ClassificationRead
+from app.schemas.api import ClassificationRead, DetectionRead
 
 
 class CatalogService:
@@ -54,4 +54,13 @@ class CatalogService:
             bbox_height=item.bbox_height,
             image_width=item.image.width,
             image_height=item.image.height,
+            disposition=item.disposition,
+            garbage_coverage=item.garbage_coverage,
+            litter_coverage=item.litter_coverage,
+            garbage_count=item.garbage_count,
+            litter_count=item.litter_count,
+            detections=[
+                DetectionRead.model_validate(detection)
+                for detection in item.detections
+            ],
         )

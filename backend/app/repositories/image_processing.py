@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.models.analysis_run import AnalysisRun
 from app.models.category import Category
 from app.models.classification import Classification
+from app.models.detection import Detection
 from app.models.image import Image
 from app.models.label import Label
 
@@ -112,6 +113,12 @@ class ImageProcessingRepository:
         status: str,
         model_version: str,
         bbox: dict | None = None,
+        disposition: str | None = None,
+        garbage_coverage: float | None = None,
+        litter_coverage: float | None = None,
+        garbage_count: int | None = None,
+        litter_count: int | None = None,
+        detections: list[dict] | None = None,
     ) -> Classification:
         label = self.db.query(Label).filter(Label.name == label_name).one()
         category = self.db.query(Category).filter(Category.id == label.category_id).one()
@@ -129,7 +136,23 @@ class ImageProcessingRepository:
             bbox_y=bbox.get("y"),
             bbox_width=bbox.get("width"),
             bbox_height=bbox.get("height"),
+            disposition=disposition,
+            garbage_coverage=garbage_coverage,
+            litter_coverage=litter_coverage,
+            garbage_count=garbage_count,
+            litter_count=litter_count,
         )
+        for detection in detections or []:
+            classification.detections.append(
+                Detection(
+                    class_name=detection.get("class"),
+                    confidence=detection.get("confidence"),
+                    bbox_x=detection.get("x"),
+                    bbox_y=detection.get("y"),
+                    bbox_width=detection.get("width"),
+                    bbox_height=detection.get("height"),
+                )
+            )
         image.status = status
         self.db.add(classification)
         self.db.commit()

@@ -1,5 +1,5 @@
 ﻿from sqlalchemy import func
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.models.analysis_run import AnalysisRun
 from app.models.category import Category
@@ -17,6 +17,7 @@ DUMMY_LABELS = [
     {"id": 2, "name": "not-overgrown", "description": "No relevant vegetation detected.", "category_id": 1},
     {"id": 3, "name": "garbage", "description": "Garbage or illegal dumping detected.", "category_id": 2},
     {"id": 4, "name": "not-garbage", "description": "No garbage detected.", "category_id": 2},
+    {"id": 5, "name": "litter", "description": "Scattered litter detected.", "category_id": 2},
 ]
 
 DUMMY_IMAGES = [
@@ -144,6 +145,7 @@ class CatalogRepository:
                 joinedload(Classification.image),
                 joinedload(Classification.label),
                 joinedload(Classification.category),
+                selectinload(Classification.detections),
             )
             .join(Classification.image)
             .join(Classification.label)
