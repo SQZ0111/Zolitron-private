@@ -22,6 +22,8 @@ class CameraFrameBatchJob:
     message: str = "Waiting to start"
     items: list[ClassificationRead] = field(default_factory=list)
     cursor: str | None = None
+    new_count: int = 0
+    duplicate_count: int = 0
     error: str | None = None
     cancel_requested: bool = False
 
@@ -54,6 +56,8 @@ class CameraFrameBatchJobManager:
                 message=job.message,
                 items=list(job.items),
                 cursor=job.cursor,
+                new_count=job.new_count,
+                duplicate_count=job.duplicate_count,
                 error=job.error,
                 cancel_requested=job.cancel_requested,
             )
@@ -110,6 +114,8 @@ class CameraFrameBatchJobManager:
 
             processor = ImageProcessingService(db)
             items: list[ClassificationRead] = []
+            new_count = 0
+            duplicate_count = 0
             total = max(len(source_frames), 1)
 
             for index, frame in enumerate(source_frames):
@@ -154,7 +160,7 @@ class CameraFrameBatchJobManager:
                     progress=45 + round(completed_ratio * 50),
                     message=f"Classifying frame {index + 1} of {len(source_frames)}",
                 )
-                classification = processor.store_and_classify(
+                classification, created = processor.store_and_classify(
                     content=content,
                     city=city,
                     country=country,
@@ -164,21 +170,32 @@ class CameraFrameBatchJobManager:
                     namespace="camera-frames",
                 )
                 items.append(classification)
+                if created:
+                    new_count += 1
+                else:
+                    duplicate_count += 1
                 self.update(
                     job_id,
                     state="processing",
                     progress=45 + round(((index + 1) / total) * 50),
                     message=f"Processed frame {index + 1} of {len(source_frames)}",
                     items=list(items),
+                    new_count=new_count,
+                    duplicate_count=duplicate_count,
                 )
 
             self.update(
                 job_id,
                 state="ready",
                 progress=100,
-                message=f"{len(items)} frame(s) ready",
+                message=(
+                    f"{len(items)} frame(s) processed — "
+                    f"{new_count} new, {duplicate_count} already imported"
+                ),
                 items=items,
                 cursor=next_cursor,
+                new_count=new_count,
+                duplicate_count=duplicate_count,
             )
         except Exception:
             logger.exception("Camera-frame batch job %s failed", job_id)

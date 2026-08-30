@@ -27,4 +27,6 @@ class CameraFrameBatchJobStatusResponse(BaseModel):
     message: str
     items: list[ClassificationRead] = Field(default_factory=list)
     cursor: str | None = Field(default=None)
+    new_count: int = Field(default=0, serialization_alias="newCount")
+    duplicate_count: int = Field(default=0, serialization_alias="duplicateCount")
     error: str | None = None

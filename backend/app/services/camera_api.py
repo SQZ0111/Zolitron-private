@@ -1,6 +1,9 @@
+import logging
 import os
 
 import requests
+
+logger = logging.getLogger(__name__)
 
 
 class CameraApiError(RuntimeError):
@@ -53,6 +56,20 @@ class CameraApiService:
     GEOCODING_URL = "https://nominatim.openstreetmap.org/reverse"
     MAX_SIZE = 1000
 
+    # The `/camera-frames/dataset` envelope is NOT confirmed against the live
+    # API or any published spec: the shapes below are tolerated candidates, and
+    # the INFO block logged by `fetch_frame_batch` is what actually settles
+    # which of them the server uses.
+    CONTENT_KEYS = ("content", "items", "data")
+    CURSOR_KEYS = ("nextCursor", "next_cursor", "cursor", "next")
+    HAS_NEXT_KEYS = ("hasNext", "has_next", "hasMore")
+    PAGE_NUMBER_KEYS = ("number", "page", "pageNumber")
+    ITEM_IMAGE_URL_KEYS = ("imageUrl", "image_url", "url")
+    ITEM_LONGITUDE_KEYS = ("lon", "longitude")
+    ITEM_LATITUDE_KEYS = ("lat", "latitude")
+    ITEM_CAPTURED_AT_KEYS = ("capturedAt", "captured_at")
+    LOG_VALUE_LIMIT = 200
+
     def __init__(
         self,
         auth: CameraApiAuthClient | None = None,
@@ -69,7 +86,8 @@ class CameraApiService:
         created_from: str | None = None,
         created_to: str | None = None,
     ) -> tuple[list[dict], str | None]:
-        params = {"size": max(1, min(size, self.MAX_SIZE))}
+        requested_size = max(1, min(size, self.MAX_SIZE))
+        params = {"size": requested_size}
         if cursor:
             params["cursor"] = cursor
         if created_from:
@@ -77,31 +95,190 @@ class CameraApiService:
         if created_to:
             params["createdTo"] = created_to
 
-        response = self._authorized_get(
-            f"{self.data_url}/camera-frames/dataset", params
-        )
+        url = f"{self.data_url}/camera-frames/dataset"
+        response = self._authorized_get(url, params)
         payload = response.json()
 
-        frames = []
-        for item in payload.get("content", []):
-            image_url = item.get("imageUrl")
-            longitude = item.get("lon")
-            latitude = item.get("lat")
-            if image_url is None or longitude is None or latitude is None:
-                continue
-            frames.append(
-                {
-                    "id": item.get("id"),
-                    "image_url": image_url,
-                    "longitude": float(longitude),
-                    "latitude": float(latitude),
-                    "heading": item.get("heading"),
-                    "captured_at": item.get("capturedAt"),
-                }
-            )
+        raw_items, content_key = self._extract_content(payload)
+        frames = [
+            frame
+            for frame in (self._to_frame(item) for item in raw_items)
+            if frame is not None
+        ]
+        next_cursor, cursor_source = self._resolve_next_cursor(
+            payload, len(raw_items), requested_size
+        )
 
-        next_cursor = payload.get("nextCursor") if payload.get("hasNext") else None
+        self._log_payload_shape(
+            url=getattr(response, "url", None) or url,
+            params=params,
+            payload=payload,
+            raw_items=raw_items,
+            content_key=content_key,
+            frame_count=len(frames),
+            requested_size=requested_size,
+            next_cursor=next_cursor,
+            cursor_source=cursor_source,
+        )
         return frames, next_cursor
+
+    @classmethod
+    def _extract_content(cls, payload) -> tuple[list, str]:
+        """The page's items, plus the name of the field they came from.
+
+        A bare list payload is a page in itself; otherwise the first of
+        `content` / `items` / `data` that actually holds a list wins.
+        """
+        if isinstance(payload, list):
+            return payload, "<bare list>"
+        if isinstance(payload, dict):
+            for key in cls.CONTENT_KEYS:
+                value = payload.get(key)
+                if isinstance(value, list):
+                    return value, key
+        return [], "<none>"
+
+    @staticmethod
+    def _item_value(item: dict, keys: tuple[str, ...]):
+        for key in keys:
+            value = item.get(key)
+            if value is not None:
+                return value
+        return None
+
+    @classmethod
+    def _to_frame(cls, item) -> dict | None:
+        if not isinstance(item, dict):
+            return None
+        image_url = cls._item_value(item, cls.ITEM_IMAGE_URL_KEYS)
+        longitude = cls._item_value(item, cls.ITEM_LONGITUDE_KEYS)
+        latitude = cls._item_value(item, cls.ITEM_LATITUDE_KEYS)
+        if image_url is None or longitude is None or latitude is None:
+            return None
+        try:
+            longitude = float(longitude)
+            latitude = float(latitude)
+        except (TypeError, ValueError):
+            return None
+        return {
+            "id": item.get("id"),
+            "image_url": image_url,
+            "longitude": longitude,
+            "latitude": latitude,
+            "heading": item.get("heading"),
+            "captured_at": cls._item_value(item, cls.ITEM_CAPTURED_AT_KEYS),
+        }
+
+    @classmethod
+    def _resolve_next_cursor(
+        cls,
+        payload,
+        item_count: int,
+        requested_size: int,
+    ) -> tuple[str | None, str]:
+        """Work out how (or whether) to ask for the next page.
+
+        Precedence, most explicit signal first:
+
+        1. An explicit gate — the first present of `hasNext` / `has_next` /
+           `hasMore` — decides whether there is a next page at all. A present
+           but falsy gate ends the walk, whatever else the payload carries.
+        2. With no gate present, the page is treated as having a successor only
+           if it also came back full. "Full" is `len(items) >= requested size`
+           rather than a strict equality, because a server that ignores our
+           `size` and serves its own default page still handed us a full page.
+        3. The cursor itself is the first present, non-empty of `nextCursor` /
+           `next_cursor` / `cursor` / `next`.
+        4. Failing a cursor field, a numeric page marker (`number` / `page` /
+           `pageNumber`) is advanced by one and returned as a string, so a
+           page-number API can be walked through the same cursor parameter.
+        """
+        if not isinstance(payload, dict):
+            return None, "payload is not a mapping"
+
+        gate_key = next((key for key in cls.HAS_NEXT_KEYS if key in payload), None)
+        if gate_key is not None and not payload.get(gate_key):
+            return None, f"{gate_key}={payload.get(gate_key)!r} reports no further page"
+
+        page_is_full = item_count >= requested_size
+        if gate_key is None and not page_is_full:
+            return None, (
+                f"no has-next field, and the page was not full "
+                f"({item_count} of {requested_size})"
+            )
+        gate_note = (
+            f"{gate_key}={payload.get(gate_key)!r}"
+            if gate_key is not None
+            else f"no has-next field, page full ({item_count} of {requested_size})"
+        )
+
+        for key in cls.CURSOR_KEYS:
+            value = payload.get(key)
+            if value not in (None, "", []):
+                return str(value), f"{key} ({gate_note})"
+
+        for key in cls.PAGE_NUMBER_KEYS:
+            value = payload.get(key)
+            if isinstance(value, bool) or not isinstance(value, int):
+                continue
+            return str(value + 1), f"{key}+1 ({gate_note})"
+
+        return None, f"no cursor or page field present ({gate_note})"
+
+    @classmethod
+    def _truncate(cls, text: str) -> str:
+        if len(text) <= cls.LOG_VALUE_LIMIT:
+            return text
+        return f"{text[: cls.LOG_VALUE_LIMIT]}... (+{len(text) - cls.LOG_VALUE_LIMIT} chars)"
+
+    @classmethod
+    def _log_payload_shape(
+        cls,
+        *,
+        url: str,
+        params: dict,
+        payload,
+        raw_items: list,
+        content_key: str,
+        frame_count: int,
+        requested_size: int,
+        next_cursor: str | None,
+        cursor_source: str,
+    ) -> None:
+        """One INFO record describing what the dataset endpoint really returned.
+
+        The response envelope is unconfirmed, so this block — not the parser —
+        is the evidence for what the field names and the `size` parameter
+        actually do.
+        """
+        lines = [
+            "camera-frames dataset response",
+            f"  request url    : {url}",
+            f"  request params : {params}",
+            f"  payload type   : {type(payload).__name__}",
+        ]
+        if isinstance(payload, dict):
+            lines.append(f"  payload keys   : {sorted(payload.keys())}")
+            for key in sorted(payload.keys()):
+                value = payload[key]
+                if isinstance(value, list):
+                    lines.append(f"    {key} = list(len={len(value)})")
+                else:
+                    lines.append(f"    {key} = {cls._truncate(repr(value))}")
+        elif isinstance(payload, list):
+            lines.append(f"  payload        : list(len={len(payload)})")
+        else:
+            lines.append(f"  payload        : {cls._truncate(repr(payload))}")
+
+        if raw_items and isinstance(raw_items[0], dict):
+            lines.append(f"  item[0] keys   : {sorted(raw_items[0].keys())}")
+        lines.append(
+            f"  content        : from {content_key}, "
+            f"{len(raw_items)} item(s) for a requested size of {requested_size}, "
+            f"{frame_count} usable frame(s)"
+        )
+        lines.append(f"  next cursor    : {next_cursor!r} from {cursor_source}")
+        logger.info("\n".join(lines))
 
     def download_image(self, image_url: str) -> bytes:
         response = requests.get(image_url, timeout=30)

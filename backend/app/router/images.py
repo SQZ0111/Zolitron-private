@@ -43,7 +43,7 @@ def upload_image(
     db: Session = Depends(get_db),
 ):
     try:
-        return ImageProcessingService(db).store_and_classify(
+        result = ImageProcessingService(db).store_and_classify(
             content=file.file.read(),
             city=city,
             country=country,
@@ -52,6 +52,9 @@ def upload_image(
             source="upload",
             namespace="uploads",
         )
+        # A re-upload of known bytes still answers with its classification;
+        # only the batch importer needs the created/duplicate distinction.
+        return result.classification
     except ImageValidationError as exc:
         raise HTTPException(
             status_code=400,
@@ -99,6 +102,8 @@ def get_camera_frame_batch_job(job_id: str):
         message=job.message,
         items=job.items,
         cursor=job.cursor,
+        new_count=job.new_count,
+        duplicate_count=job.duplicate_count,
         error=job.error,
     )
 
@@ -121,6 +126,8 @@ def cancel_camera_frame_batch_job(job_id: str):
         message=job.message,
         items=job.items,
         cursor=job.cursor,
+        new_count=job.new_count,
+        duplicate_count=job.duplicate_count,
         error=job.error,
     )
 
