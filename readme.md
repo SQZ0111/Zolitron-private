@@ -1,6 +1,6 @@
-# Zolitron
+# Zolitron (archived)
 
-Zolitron is an MVP web application that finds illegal garbage and litter in German street imagery and shows the accepted detections on a map. Images enter the system either as browser uploads or as background imports from the Zolitron camera fleet's frame API. The backend validates and stores each image, runs it through a remote Roboflow detection workflow, and saves the resulting classification with a `collect` / `watch` / `not-garbage` recommendation. That recommendation comes from how much of the actionable ground region below the horizon line the detections cover and how many of them there are, with boxes too small to act on discarded as model noise; the rule and its calibration constants are documented in `architecture.md` section 4. The Vue client renders those results as map markers with image popups, so a reviewer can see at a glance which sites need a collection truck and which only need monitoring. Bochum is the current default focus.
+Zolitron is an MVP web application that finds illegal garbage and litter in German street imagery and shows the accepted detections on a map. Images enter the system either as browser uploads or as background imports from the Zolitron camera fleet's frame API. The backend validates and stores each image, runs it through a remote Roboflow detection workflow, and saves the resulting classification with a `collect` / `watch` / `not-garbage` recommendation. The Vue client renders those results as map markers with image popups, so a reviewer can see at a glance which sites need a collection truck and which only need monitoring. Bochum is the current default focus.
 
 The design rationale, component documentation, and full API reference live in `architecture.md`. Deployment and secrets detail lives in `usage.md`.
 
@@ -119,7 +119,7 @@ npm run test:client
 This runs the Vitest suite in `client/src/tests` and should report:
 
 ```text
-23 passed
+19 passed
 ```
 
 Backend on Windows:
@@ -137,7 +137,7 @@ npm run test:backend:linux
 Either script should report:
 
 ```text
-34 passed
+27 passed
 ```
 
 The backend test scripts use the project virtual environment at `backend/venv`. If the venv or its dependencies are missing, run `npm run install:all:win` or `npm run install:all:linux` first.
@@ -175,8 +175,6 @@ Add `--reseed` to repopulate the dummy demo data afterwards, or `--yes` to skip 
 ```
 
 Categories and labels are left untouched, since they are fixed taxonomy rather than test data. This is a local CLI tool only.
-
-Recommendations and coverage values are computed once, at classification time, and stored on the row. Rows classified before a change to the disposition rule or its constants keep the old numbers and the old recommendation, so a reset and re-import is what brings an existing local database onto the current rule.
 
 ## CI/CD
 
