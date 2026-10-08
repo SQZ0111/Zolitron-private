@@ -2,7 +2,7 @@
   "name": "zolitron",
   "version": "1.0.0",
   "description": "This is the project of group zolitron-2",
-  "license": "ISC",
+  "license": "MIT",
   "author": "",
   "scripts": {
     "create:venv:win": "py -3.11 -m venv backend/venv",
