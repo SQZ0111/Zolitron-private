@@ -21,6 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 -->
 
+
+<!-- Dieser Kommentar ist total unnötig -->
 <script setup>
 import Navbar from './components/Navigation/Navbar.vue';
 import { useRoute } from 'vue-router';
